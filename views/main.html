@@ -5,16 +5,17 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<title>Lazy Type</title>
 	<link rel="stylesheet" href="../node_modules/materialize-css/dist/css/materialize.min.css">
-	<link rel="stylesheet" href="../node_modules/materialize-css/dist/js/materialize.min.js">
 	<link rel="stylesheet" href="../static/css/font.css">
 </head>
 <body>
-	
+
+
+	<script type="text/javascript">
+		window.$ = window.jQuery = require('jquery');
+		var electron = require('electron');
+		var {ipcRenderer} = electron;
+		console.log($);
+	</script>
+	<script type="javascript" href="../node_modules/materialize-css/dist/js/materialize.min.js"></script>	
 </body>
-<script type="text/javascript">
-	window.$ = window.jQuery = require('jquery');
-	var electron = require('electron');
-	var {ipcRenderer} = electron;
-	console.log($);
-</script>
 </html>

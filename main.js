@@ -8,6 +8,8 @@ function createMainWindow(){
 		nodeIntegration: true
 	}});
 	mainScreen.loadFile(path.join(__dirname, 'views', 'main.html'));
+	mainScreen.setMenu(null);
+	mainScreen.removeMenu();
 	mainScreen.openDevTools();
 	mainScreen.on('closed', function(){
 		loginScreen = null;

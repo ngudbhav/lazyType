@@ -1,5 +1,17 @@
 const {app, BrowserWindow, ipcMain} = require('electron');
 const path = require('path');
+const fs = require('fs');
+
+const nedb = require('nedb');
+const history = new nedb({
+	filename: app.getPath('appData') + '/lazyType/data/history.db'
+});
+//Save the db in format
+//{
+//	"name":"trico",
+//	"path":path
+//}
+history.loadDatabase();
 
 let mainScreen;
 function createMainWindow(){
@@ -15,6 +27,95 @@ function createMainWindow(){
 		loginScreen = null;
 	});
 }
+addItem();
+function addItem(data){
+	//{
+	//	oname: ""//Previous command name. Empty in case of new addition
+	//	nname: ""//New command name.
+	//	path: ""//File path in case of file and CMD alias in case of command
+	//	switch: ""//1 for command and 0 for file
+	//}
+	//In case updation is performed
+	history.find({path: data.path}, function (error, results) {
+		//The case when only the alias is updated
+		if (error) throw error;
+		else {
+			if(results.length===1){
+				updateItem(data);//Only rename the file
+			}
+			else{
+				history.find({name: data.nname}, function(error, results){
+					//The case when the path is updated
+					if(error) throw error;
+					else{
+						if(results.length === 1){
+							//Delete the previous file with the same name
+							deleteItem(data);
+							//Create a new file with the new path
+							createItem(data);
+						}
+						else{
+							//New command Input Case
+							//Create a new File
+							createItem(data);
+						}
+					}
+				});
+			}
+		}
+	});
+}
+function createItem(data){
+	//Create file and add entry into the database
+	//Both cases differ by switch 1/0.
+	if(data.switch === 0){
+		fs.writeFile('./env/'+data.nname+'.cmd', '@echo off\nstart "" /B \"'+data.path+' %*\"', function (error) {
+			if (error) throw error;
+			else{
+				//History entry
+				history.insert({"name":data.nname, "path":data.path}, function(error){
+					if(error) throw error;
+				});
+			}
+		});
+	}
+	else{
+		fs.writeFile('./env/'+data.nname+'.cmd', "@echo off\n"+data.path+" %*", function (error) {
+			if (error) throw error;
+			else{
+				//History entry
+				history.insert({"name": data.nname,"path": data.path}, function (error) {
+					if (error) throw error;
+				});
+			}
+		});
+	}
+	//Run an existing command
+}
+function deleteItem(data){
+	//Delete the command
+	fs.unlink("./env/"+data.nname+".cmd", function(error){
+		if(error) throw error;
+		else{
+			history.remove({name: data.nname}, {multi: true}, function (error, results) {
+				if (error) throw error;
+			});
+		}
+	});
+}
+function updateItem(data){
+	//Just renaming the command will invoke the file
+	//Previous Name -> New Name
+	fs.rename('./env/'+data.oname+'.cmd', './env/'+data.nname+'.bat', function (error) {
+		if (error) throw error;
+		else{
+			history.update({"name":data.oname}, {$set:{"name":data.nname}}, {}, function(error){
+				if(error) throw error;
+			});
+		}
+	});
+}
+
 app.on('ready', ()=>{
 	createMainWindow();
 });

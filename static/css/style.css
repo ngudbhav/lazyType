@@ -1,0 +1,63 @@
+@font-face {
+    font-family: 'Material Icons';
+    font-style: normal;
+    font-weight: 400;
+    src: url(https://fonts.gstatic.com/s/materialicons/v48/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2) format('woff2');
+  }
+  
+  .material-icons {
+    font-family: 'Material Icons';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .header{
+    margin-top:0;
+}
+.card{
+    border-bottom: 2px solid #ff9800;
+    text-align:left;
+    margin-bottom:4%;
+}
+input{
+  font-size: 24px !important;
+  font-weight:300 !important; 
+}
+input::placeholder{
+  color: rgba(0,0,0,0.87);
+    font-size: 24px;
+  font-weight: 300;
+}
+.input-field input[type=text]:focus {
+     border-bottom: 1px solid #ff9800 !important;
+     box-shadow: 0 1px 0 0 #ff9800 !important;
+}
+#sub, #sub:hover,#sub:active{
+  background-color:#10b362;
+}
+#arrow{
+    color: #ff9800;
+    font-size:43px;
+}
+.file-field .btn{
+  width:100%;
+  font-size:20px;
+  text-transform:inherit;
+  background-color:#5a5a5a;
+}
+#submit-icon{
+  color:#2dbe33;
+  font-size:40px;
+  margin-top:15%;
+  cursor:pointer;
+}

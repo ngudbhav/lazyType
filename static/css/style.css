@@ -33,7 +33,8 @@ input{
   font-size: 24px !important;
   font-weight:300 !important; 
 }
-input::placeholder{
+
+input::placeholder {
   color: rgba(0,0,0,0.87);
     font-size: 24px;
   font-weight: 300;
@@ -41,6 +42,11 @@ input::placeholder{
 .input-field input[type=text]:focus {
      border-bottom: 1px solid #ff9800 !important;
      box-shadow: 0 1px 0 0 #ff9800 !important;
+}
+input[type="text"][disabled] {
+   color: rgba(0,0,0,0.87) !important;
+    font-size: 24px !important;
+  font-weight: 300 !important;
 }
 #sub, #sub:hover,#sub:active{
   background-color:#10b362;
@@ -55,9 +61,21 @@ input::placeholder{
   text-transform:inherit;
   background-color:#5a5a5a;
 }
-#submit-icon{
-  color:#2dbe33;
-  font-size:40px;
-  margin-top:15%;
+.delete-icon,.edit-icon,.submit-icon{
+  font-size:35px;
+  margin-top:10%;
   cursor:pointer;
+}
+.submit-icon{
+  color:#2dbe33;
+}
+.delete-icon{
+  color:#ff2d2de6;
+}
+.edit-icon{
+  color:#26a69a;
+}
+
+.hide{
+    display: none;
 }

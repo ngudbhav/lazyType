@@ -85,13 +85,14 @@ color:black;
 padding:0;
 margin:0; 
 }
-.alert i{
-color:green;
-margin-top:2%;
-}
 #toast-container {
   top: auto !important;
   right: auto !important;
   bottom: 5%;
   left:5%;  
+}
+.fixed-action-btn{
+  top:6%;
+  right:1%;
+  position:fixed;
 }

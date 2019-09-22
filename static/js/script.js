@@ -1,6 +1,6 @@
 var electron = require('electron');
 var { ipcRenderer } = electron;
-
+var countCards = 0;
 ipcRenderer.on('status', function(e, item){
     // item.status = 1 => Created new command
     // item.status = 2 => Deleted command
@@ -98,11 +98,13 @@ var cardHtml =
 ipcRenderer.on('history', function(e, item){
     console.log(item);
     var card = document.getElementById('cardBody');
-    
+    countCards = item.length;
     if(item.length == 0){
         var newHtml = addCard;
         newHtml = newHtml.replace(/%%id%%/gi, 1);
         card.innerHTML += newHtml;
+        document.getElementsByClassName('extraText')[0].classList.remove('hide');
+        document.getElementsByClassName('extraText')[1].classList.remove('hide');
 
     }
 
@@ -182,6 +184,25 @@ function fileNameUpdate(id){
     org[id-1].setAttribute('value',filebtn[id-1].files[0].path);    
 }
 
+function addNewCard(){
+    if(countCards > 0){
+        var card = document.getElementById('cardBody');
+        var newHtml = addCard;
+        countCards++;
+        newHtml = newHtml.replace(/%%id%%/gi, countCards);
+        card.innerHTML = newHtml + card.innerHTML;
+    }
+}
+
 $(document).ready(function(){
     ipcRenderer.send('finish-load');
 });
+document.addEventListener('DOMContentLoaded', function() {
+    var elems = document.querySelectorAll('.fixed-action-btn');
+    var instances = M.FloatingActionButton.init(elems, {
+      direction: 'bottom'
+    });
+    var elems2 = document.querySelectorAll('.tooltipped');
+    var instances = M.Tooltip.init(elems2, {});
+});
+

@@ -9,8 +9,7 @@ ipcRenderer.on('status', function(e, item){
 });
 ipcRenderer.on('history', function(e, item){
     console.log(item);
-    // item.name => name of the command
-    // item.path => File path in case of file and CMD alias in case of command
+    
 });
 
 function editContents(id){
@@ -40,19 +39,14 @@ function submitContents(id){
     var short = document.getElementsByClassName('shortcut_cmd');
     var filebtn = document.getElementsByClassName('filebtn');
     // //save and update in database
-    // let inf = filebtn[id-1];
-    // // if(inf.files.length===0){
-    // //     org[id-1].value = '';
-    // // }
-    // // else{
-    // //     path = "";
-    // // }
-    // let obj = {
-    //     nname: short[id - 1].value,
-    //     path: org[id-1].value,
-    //     switch: inf.files.length===0 ? 1 : 0 
-    // };
-    // ipcRenderer.send('addItem', obj);
+    let inf = filebtn[id-1];
+    
+    let obj = {
+        nname: short[id - 1].value,
+        path: org[id-1].value,
+        switch: inf.files.length===0 ? 1 : 0 
+    };
+    ipcRenderer.send('addItem', obj);
     //ui update
     
 
@@ -71,9 +65,64 @@ function submitContents(id){
 function deleteContents(id){
 
     //delete from db
-    ipcRenderer.send('deleteItem', { name: document.getElementsByClassName('shortcut_cmd')[id - 1].value});
+    ipcRenderer.send('deleteItem', { nname: document.getElementsByClassName('shortcut_cmd')[id - 1].value});
     //ui update
     var card = document.getElementsByClassName('card');
     card[id-1].classList.add('hide');
 
 }
+
+function fileNameUpdate(id){
+    var filebtn = document.getElementsByClassName('filebtn');    
+    var org = document.getElementsByClassName('original_cmd');
+    org[id-1].setAttribute('value',filebtn[id-1].files[0].path);    
+}
+
+$(document).ready(function(){
+    var card = document.getElementById('cardBody');
+    var cardHtml = 
+    ` <div class="col s12">
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">
+                        <div class="row">
+                            <form action="" class="col s12">
+
+                                    <div class="input-field col s4">
+                                        <input disabled value="dir /b" placeholder="Original Command"  type="text" class="validate original_cmd" >
+                                    </div>
+
+                                    <div class= "file-field input-field col s2  hide" >
+                                            <div class="btn">
+                                                    <span>Choose File</span>
+                                                    <input type="file" class="filebtn" onchange="fileNameUpdate(%%id%%)">
+                                            </div>
+                                    </div>
+                                    <div class="input-field col s1 center">
+                                            <i class=" medium material-icons" id="arrow">arrow_forward</i>
+                                    </div>
+                                    <div class="input-field col s4">
+                                            <input disabled value="ls" placeholder="Shortcut Command"  type="text" class="validate shortcut_cmd" >
+                                    </div>
+                                    <div class="input-field col s1 center hide submit">
+                                            <i class="material-icons submit-icon" onclick="submitContents(%%id%%)">send</i>
+                                        </div>
+                                        <div class="input-field col s1 right delete ">
+                                            <i class="material-icons delete-icon" onclick="deleteContents(%%id%%)">delete</i>
+                                        </div>
+                                        <div class="input-field col right center edit">
+                                                <i class="material-icons edit-icon" onclick="editContents(%%id%%)">edit</i>
+                                        </div>																	
+                            </form>
+                        </div>		
+                </span>
+            </div>
+        </div>
+    </div>`;
+
+    for(let i=1;i<=10;i++){
+        var newHtml = cardHtml;
+        newHtml = newHtml.replace(/%%id%%/gi, i);
+        card.innerHTML+= newHtml;
+    }
+});

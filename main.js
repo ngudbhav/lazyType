@@ -56,6 +56,7 @@ function addItem(data){
 		if (error) throw error;
 		else {
 			if(results.length===1){
+				console.log('update')
 				updateItem(data, results[0].name);//Only rename the file
 			}
 			else{
@@ -65,6 +66,8 @@ function addItem(data){
 					else{
 						if(results.length === 1){
 							//Delete the previous file with the same name
+				console.log('update path')
+							
 							deleteItem(data, 0);
 							//Create a new file with the new path
 							createItem(data);
@@ -83,6 +86,8 @@ function addItem(data){
 function createItem(data){
 	//Create file and add entry into the database
 	//Both cases differ by switch 1/0.
+	console.log('update file')
+
 	if(data.switch === 0){
 		fs.writeFile('./env/'+data.nname+'.cmd', '@echo off\nstart "" /B \"'+data.path+' %*\"', function (error) {
 			if (error) throw error;
@@ -132,7 +137,7 @@ function deleteItem(data, flag){
 function updateItem(data, oname){
 	//Just renaming the command will invoke the file
 	//Previous Name -> New Name
-	fs.rename('./env/'+oname+'.cmd', './env/'+data.nname+'.bat', function (error) {
+	fs.rename('./env/'+oname+'.cmd', './env/'+data.nname+'.cmd', function (error) {
 		if (error) throw error;
 		else{
 			history.update({"name":data.oname}, {$set:{"name":data.nname}}, {}, function(error){

@@ -18,7 +18,8 @@
   "homepage": "https://github.com/ngudbhav/lazyType#readme",
   "dependencies": {
     "jquery": "^3.4.1",
-    "materialize-css": "^1.0.0-rc.2"
+    "materialize-css": "^1.0.0-rc.2",
+    "nedb": "^1.8.0"
   },
   "devDependencies": {
     "electron": "^6.0.9"

@@ -26,11 +26,26 @@ function createMainWindow(){
 	mainScreen.on('closed', function(){
 		loginScreen = null;
 	});
+	do {
+		history.find({}, function (error, results) {
+			if (error) throw error;
+			else {
+				console.log(results);
+				mainScreen.webContents.send('history', results);
+			}
+		});
+	} while (!mainScreen);
 }
-addItem();
+
+ipcMain.on('addItem', function(e, item){
+	addItem(item);
+});
+ipcMain.on('deleteItem', function(e, item){
+	deleteItem(item, 1);
+});
+
 function addItem(data){
 	//{
-	//	oname: ""//Previous command name. Empty in case of new addition
 	//	nname: ""//New command name.
 	//	path: ""//File path in case of file and CMD alias in case of command
 	//	switch: ""//1 for command and 0 for file
@@ -41,7 +56,7 @@ function addItem(data){
 		if (error) throw error;
 		else {
 			if(results.length===1){
-				updateItem(data);//Only rename the file
+				updateItem(data, results[0].name);//Only rename the file
 			}
 			else{
 				history.find({name: data.nname}, function(error, results){
@@ -50,7 +65,7 @@ function addItem(data){
 					else{
 						if(results.length === 1){
 							//Delete the previous file with the same name
-							deleteItem(data);
+							deleteItem(data, 0);
 							//Create a new file with the new path
 							createItem(data);
 						}
@@ -75,6 +90,9 @@ function createItem(data){
 				//History entry
 				history.insert({"name":data.nname, "path":data.path}, function(error){
 					if(error) throw error;
+					else{
+						mainScreen.webContents.send('status', { name: data.nname, status: 1 });
+					}
 				});
 			}
 		});
@@ -86,31 +104,42 @@ function createItem(data){
 				//History entry
 				history.insert({"name": data.nname,"path": data.path}, function (error) {
 					if (error) throw error;
+					else{
+						mainScreen.webContents.send('status', {name:data.nname, status:1});
+					}
 				});
 			}
 		});
 	}
 	//Run an existing command
 }
-function deleteItem(data){
+function deleteItem(data, flag){
 	//Delete the command
 	fs.unlink("./env/"+data.nname+".cmd", function(error){
 		if(error) throw error;
 		else{
 			history.remove({name: data.nname}, {multi: true}, function (error, results) {
 				if (error) throw error;
+				else{
+					if(!flag){
+						mainScreen.webContents.send('status', { name: data.nname, status: 2 });
+					}
+				}
 			});
 		}
 	});
 }
-function updateItem(data){
+function updateItem(data, oname){
 	//Just renaming the command will invoke the file
 	//Previous Name -> New Name
-	fs.rename('./env/'+data.oname+'.cmd', './env/'+data.nname+'.bat', function (error) {
+	fs.rename('./env/'+oname+'.cmd', './env/'+data.nname+'.bat', function (error) {
 		if (error) throw error;
 		else{
 			history.update({"name":data.oname}, {$set:{"name":data.nname}}, {}, function(error){
 				if(error) throw error;
+				else{
+					mainScreen.webContents.send('status', { name: data.nname, status: 3 });
+				}
 			});
 		}
 	});

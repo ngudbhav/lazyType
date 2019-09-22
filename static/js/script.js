@@ -6,11 +6,56 @@ ipcRenderer.on('status', function(e, item){
     // item.status = 2 => Deleted command
     // item.status = 3 => Updated new command
     // item.name is the name of the shortcut command
+    switch(item.status){
+        case 1: M.toast({html: 'Created Successfully &nbsp<i class="material-icons">check_circle</i>',classes:'orange white-text left',displayLength:2000});
+                break;
+        case 2: M.toast({html: 'Deleted Successfully &nbsp<i class="material-icons">check_circle</i>',classes:'orange white-text left',displayLength:2000});
+                break;
+        case 3:M.toast({html: 'Updated Successfully &nbsp<i class="material-icons">check_circle</i>',classes:'orange white-text left',displayLength:2000});
+                break;
+    }  
 });
-ipcRenderer.on('history', function(e, item){
-    console.log(item);
-    var card = document.getElementById('cardBody');
-    var cardHtml =
+
+var addCard = `<div class="col s12">
+<div class="card">
+    <div class="card-content">
+        <span class="card-title">
+                <div class="row">
+                    <form action="" class="col s12">
+
+                            <div class="input-field col s4">
+                                <input  placeholder="Original Command"  type="text" class="validate original_cmd" >
+                            </div>
+
+                            <div class= "file-field input-field col s2 ">
+                                    <div class="btn">
+                                            <span>Choose File</span>
+                                            <input type="file" class="filebtn" onchange="fileNameUpdate(%%id%%)">
+                                    </div>
+                            </div>
+                            <div class="input-field col s1 center">
+                                    <i class=" medium material-icons" id="arrow">arrow_forward</i>
+                            </div>
+                            <div class="input-field col s4">
+                                    <input placeholder="Shortcut Command"  type="text" class="validate shortcut_cmd" >
+                            </div>
+                            <div class="input-field col s1 center submit">
+                                <i class="material-icons submit-icon" onclick="submitContents(%%id%%)">send</i>
+                            </div>
+                            <div class="input-field col s1 right delete hide">
+                                <i class="material-icons delete-icon" onclick="deleteContents(%%id%%)">delete</i>
+                            </div>
+                            <div class="input-field col right center edit hide">
+                                    <i class="material-icons edit-icon" onclick="editContents(%%id%%)">edit</i>
+                            </div>																	
+                    </form>
+                </div>		
+        </span>
+    </div>
+</div>
+</div> `;
+
+var cardHtml =
         ` <div class="col s12">
         <div class="card">
             <div class="card-content">
@@ -19,7 +64,7 @@ ipcRenderer.on('history', function(e, item){
                             <form action="" class="col s12">
 
                                     <div class="input-field col s4">
-                                        <input disabled value="dir /b" placeholder="Original Command"  type="text" class="validate original_cmd" >
+                                        <input disabled value="%%org_cmd%%" placeholder="Original Command"  type="text" class="validate original_cmd" >
                                     </div>
 
                                     <div class= "file-field input-field col s2  hide" >
@@ -32,7 +77,7 @@ ipcRenderer.on('history', function(e, item){
                                             <i class=" medium material-icons" id="arrow">arrow_forward</i>
                                     </div>
                                     <div class="input-field col s4">
-                                            <input disabled value="ls" placeholder="Shortcut Command"  type="text" class="validate shortcut_cmd" >
+                                            <input disabled value="%%short_cmd%%" placeholder="Shortcut Command"  type="text" class="validate shortcut_cmd" >
                                     </div>
                                     <div class="input-field col s1 center hide submit">
                                             <i class="material-icons submit-icon" onclick="submitContents(%%id%%)">send</i>
@@ -50,9 +95,23 @@ ipcRenderer.on('history', function(e, item){
         </div>
     </div>`;
 
-    for (let i = 1; i <= 10; i++) {
+ipcRenderer.on('history', function(e, item){
+    console.log(item);
+    var card = document.getElementById('cardBody');
+    
+    if(item.length == 0){
+        var newHtml = addCard;
+        newHtml = newHtml.replace(/%%id%%/gi, 1);
+        card.innerHTML += newHtml;
+
+    }
+
+    for (let i = 0; i < item.length; i++) {
         var newHtml = cardHtml;
-        newHtml = newHtml.replace(/%%id%%/gi, i);
+        newHtml = newHtml.replace(/%%id%%/gi, i+1);
+        newHtml = newHtml.replace(/%%org_cmd%%/gi, item[i].name);
+        newHtml = newHtml.replace(/%%short_cmd%%/gi, item[i].path);
+
         card.innerHTML += newHtml;
     }
 });
@@ -72,7 +131,7 @@ function editContents(id){
     edit[id-1].classList.add('hide');
     org[id-1].removeAttribute('disabled');
     short[id-1].removeAttribute('disabled');
-
+    
 }
 
 function submitContents(id){

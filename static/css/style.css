@@ -1,81 +1,97 @@
 @font-face {
-    font-family: 'Material Icons';
-    font-style: normal;
-    font-weight: 400;
-    src: url(https://fonts.gstatic.com/s/materialicons/v48/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2) format('woff2');
-  }
-  
-  .material-icons {
-    font-family: 'Material Icons';
-    font-weight: normal;
-    font-style: normal;
-    font-size: 24px;
-    line-height: 1;
-    letter-spacing: normal;
-    text-transform: none;
-    display: inline-block;
-    white-space: nowrap;
-    word-wrap: normal;
-    direction: ltr;
-    -webkit-font-feature-settings: 'liga';
-    -webkit-font-smoothing: antialiased;
-  }
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/s/materialicons/v48/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2) format('woff2');
+}
 
-  .header{
-    margin-top:0;
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+.header{
+  margin-top:0;
 }
 .card{
-    border-bottom: 2px solid #ff9800;
-    text-align:left;
-    margin-bottom:4%;
+  border-bottom: 2px solid #ff9800;
+  text-align:left;
+  margin-bottom:4%;
 }
 input{
-  font-size: 24px !important;
-  font-weight:300 !important; 
+font-size: 24px !important;
+font-weight:300 !important; 
 }
 
 input::placeholder {
-  color: rgba(0,0,0,0.87);
-    font-size: 24px;
-  font-weight: 300;
+color: rgba(0,0,0,0.87);
+  font-size: 24px;
+font-weight: 300;
 }
 .input-field input[type=text]:focus {
-     border-bottom: 1px solid #ff9800 !important;
-     box-shadow: 0 1px 0 0 #ff9800 !important;
+   border-bottom: 1px solid #ff9800 !important;
+   box-shadow: 0 1px 0 0 #ff9800 !important;
 }
 input[type="text"][disabled] {
-   color: rgba(0,0,0,0.87) !important;
-    font-size: 24px !important;
-  font-weight: 300 !important;
+ color: rgba(0,0,0,0.87) !important;
+  font-size: 24px !important;
+font-weight: 300 !important;
 }
 #sub, #sub:hover,#sub:active{
-  background-color:#10b362;
+background-color:#10b362;
 }
 #arrow{
-    color: #ff9800;
-    font-size:43px;
+  color: #ff9800;
+  font-size:43px;
 }
 .file-field .btn{
-  width:100%;
-  font-size:20px;
-  text-transform:inherit;
-  background-color:#5a5a5a;
+width:100%;
+font-size:20px;
+text-transform:inherit;
+background-color:#5a5a5a;
 }
 .delete-icon,.edit-icon,.submit-icon{
-  font-size:35px;
-  margin-top:10%;
-  cursor:pointer;
+font-size:35px;
+margin-top:10%;
+cursor:pointer;
 }
 .submit-icon{
-  color:#2dbe33;
+color:#2dbe33;
 }
 .delete-icon{
-  color:#ff2d2de6;
+color:#ff2d2de6;
 }
 .edit-icon{
-  color:#26a69a;
+color:#26a69a;
 }
 
 .hide{
-    display: none;
+  display: none;
+}
+.alert{
+background-color:whitesmoke;
+color:black;
+padding:0;
+margin:0; 
+}
+.alert i{
+color:green;
+margin-top:2%;
+}
+#toast-container {
+  top: auto !important;
+  right: auto !important;
+  bottom: 5%;
+  left:5%;  
 }

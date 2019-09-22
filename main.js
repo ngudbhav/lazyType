@@ -26,17 +26,16 @@ function createMainWindow(){
 	mainScreen.on('closed', function(){
 		loginScreen = null;
 	});
-	do {
-		history.find({}, function (error, results) {
-			if (error) throw error;
-			else {
-				console.log(results);
-				mainScreen.webContents.send('history', results);
-			}
-		});
-	} while (!mainScreen);
 }
-
+ipcMain.on('finish-load', function(e, item){
+	history.find({}, function (error, results) {
+		if (error) throw error;
+		else {
+			console.log(results);
+			mainScreen.webContents.send('history', results);
+		}
+	});
+});
 ipcMain.on('addItem', function(e, item){
 	addItem(item);
 });
@@ -46,7 +45,7 @@ ipcMain.on('deleteItem', function(e, item){
 
 function addItem(data){
 	//{
-	//	nname: ""//New command name.
+	//	name: ""//New command name.
 	//	path: ""//File path in case of file and CMD alias in case of command
 	//	switch: ""//1 for command and 0 for file
 	//}
@@ -60,7 +59,7 @@ function addItem(data){
 				updateItem(data, results[0].name);//Only rename the file
 			}
 			else{
-				history.find({name: data.nname}, function(error, results){
+				history.find({name: data.name}, function(error, results){
 					//The case when the path is updated
 					if(error) throw error;
 					else{
@@ -89,28 +88,28 @@ function createItem(data){
 	console.log('update file')
 
 	if(data.switch === 0){
-		fs.writeFile('./env/'+data.nname+'.cmd', '@echo off\nstart "" /B \"'+data.path+' %*\"', function (error) {
+		fs.writeFile('./env/'+data.name+'.cmd', '@echo off\nstart "" /B \"'+data.path+' %*\"', function (error) {
 			if (error) throw error;
 			else{
 				//History entry
-				history.insert({"name":data.nname, "path":data.path}, function(error){
+				history.insert({"name":data.name, "path":data.path}, function(error){
 					if(error) throw error;
 					else{
-						mainScreen.webContents.send('status', { name: data.nname, status: 1 });
+						mainScreen.webContents.send('status', { name: data.name, status: 1 });
 					}
 				});
 			}
 		});
 	}
 	else{
-		fs.writeFile('./env/'+data.nname+'.cmd', "@echo off\n"+data.path+" %*", function (error) {
+		fs.writeFile('./env/'+data.name+'.cmd', "@echo off\n"+data.path+" %*", function (error) {
 			if (error) throw error;
 			else{
 				//History entry
-				history.insert({"name": data.nname,"path": data.path}, function (error) {
+				history.insert({"name": data.name,"path": data.path}, function (error) {
 					if (error) throw error;
 					else{
-						mainScreen.webContents.send('status', {name:data.nname, status:1});
+						mainScreen.webContents.send('status', {name:data.name, status:1});
 					}
 				});
 			}
@@ -120,30 +119,24 @@ function createItem(data){
 }
 function deleteItem(data, flag){
 	//Delete the command
-	fs.unlink("./env/"+data.nname+".cmd", function(error){
+	fs.unlink("./env/"+data.name+".cmd", function(error){
 		if(error) throw error;
 		else{
-			history.remove({name: data.nname}, {multi: true}, function (error, results) {
-				if (error) throw error;
-				else{
-					if(!flag){
-						mainScreen.webContents.send('status', { name: data.nname, status: 2 });
-					}
-				}
-			});
+			history.remove({name: data.name}, {multi: true});
+			mainScreen.webContents.send('status', { name: data.name, status: 2 });
 		}
 	});
 }
 function updateItem(data, oname){
 	//Just renaming the command will invoke the file
 	//Previous Name -> New Name
-	fs.rename('./env/'+oname+'.cmd', './env/'+data.nname+'.cmd', function (error) {
+	fs.rename('./env/'+oname+'.cmd', './env/'+data.name+'.cmd', function (error) {
 		if (error) throw error;
 		else{
-			history.update({"name":data.oname}, {$set:{"name":data.nname}}, {}, function(error){
+			history.update({"name":data.oname}, {$set:{"name":data.name}}, {}, function(error){
 				if(error) throw error;
 				else{
-					mainScreen.webContents.send('status', { name: data.nname, status: 3 });
+					mainScreen.webContents.send('status', { name: data.name, status: 3 });
 				}
 			});
 		}

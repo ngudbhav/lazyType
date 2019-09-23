@@ -18,7 +18,7 @@ function createMainWindow(){
 	//Create login screen
 	mainScreen = new BrowserWindow({width: 1000, height: 600, webPreferences: {
 		nodeIntegration: true
-	}});
+	});
 	mainScreen.loadFile(path.join(__dirname, 'views', 'main.html'));
 	mainScreen.setMenu(null);
 	mainScreen.removeMenu();

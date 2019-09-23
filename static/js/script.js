@@ -111,8 +111,8 @@ ipcRenderer.on('history', function(e, item){
     for (let i = 0; i < item.length; i++) {
         var newHtml = cardHtml;
         newHtml = newHtml.replace(/%%id%%/gi, i+1);
-        newHtml = newHtml.replace(/%%org_cmd%%/gi, item[i].name);
-        newHtml = newHtml.replace(/%%short_cmd%%/gi, item[i].path);
+        newHtml = newHtml.replace(/%%org_cmd%%/gi, item[i].path);
+        newHtml = newHtml.replace(/%%short_cmd%%/gi, item[i].name);
 
         card.innerHTML += newHtml;
     }

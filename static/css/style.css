@@ -4,7 +4,6 @@
   font-weight: 400;
   src: url(https://fonts.gstatic.com/s/materialicons/v48/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2) format('woff2');
 }
-
 .material-icons {
   font-family: 'Material Icons';
   font-weight: normal;
@@ -99,7 +98,7 @@ color:#26a69a;
   left:5%;  
 }
 .fixed-action-btn{
-  top:6%;
+  top:12%;
   right:1%;
   position:fixed;
 }
@@ -111,4 +110,14 @@ color:#26a69a;
   }
 .card:hover{
     box-shadow: 0 0px 8px 0 rgba(0,0,0,0.6);
+}
+.titlebar.light .window-controls-container .window-icon {
+    background-color: #333333;
+}
+.window-title{
+  color:White;
+  text-transform:uppercase;
+  font-weight:bold;
+  letter-spacing:2px;
+  padding-left:1%;
 }

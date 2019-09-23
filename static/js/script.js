@@ -231,3 +231,11 @@ document.addEventListener('DOMContentLoaded', function() {
     var instances = M.Tooltip.init(elems2, {});
 });
 
+const customTitlebar = require('custom-electron-titlebar');
+ 
+new customTitlebar.Titlebar({
+    backgroundColor: customTitlebar.Color.fromHex('#ff9800'),
+    icon:'',
+    menu:'',
+    titleHorizontalAlignment:'left'
+});

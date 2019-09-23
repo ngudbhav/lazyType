@@ -65,6 +65,15 @@ background-color:#5a5a5a;
 font-size:35px;
 margin-top:10%;
 cursor:pointer;
+display: inline-block;
+vertical-align: middle;
+-webkit-transform: perspective(1px) translateZ(0);
+transform: perspective(1px) translateZ(0);
+box-shadow: 0 0 1px rgba(0, 0, 0, 0);
+-webkit-transition-duration: 0.3s;
+transition-duration: 0.3s;
+-webkit-transition-property: transform;
+transition-property: transform;
 }
 .submit-icon{
 color:#2dbe33;
@@ -75,15 +84,13 @@ color:#ff2d2de6;
 .edit-icon{
 color:#26a69a;
 }
-
+.edit-icon:hover,.delete-icon:hover,.submit-icon:hover{
+  -webkit-transform: scale(1.2);
+  transform: scale(1.2);
+}
 .hide{
   display: none;
-}
-.alert{
-background-color:whitesmoke;
-color:black;
-padding:0;
-margin:0; 
+  transition:all 10s ease !important;
 }
 #toast-container {
   top: auto !important;
@@ -95,4 +102,13 @@ margin:0;
   top:6%;
   right:1%;
   position:fixed;
+}
+#card-body,.container{
+  transition:all 1s ease !important;  
+}
+.card{
+  transition:all .3s ease;
+  }
+.card:hover{
+    box-shadow: 0 0px 8px 0 rgba(0,0,0,0.6);
 }

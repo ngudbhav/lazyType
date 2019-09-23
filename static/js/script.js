@@ -169,7 +169,6 @@ function submitContents(id){
 }
 
 function deleteContents(id){
-
     //delete from db
     ipcRenderer.send('deleteItem', { name: document.getElementsByClassName('shortcut_cmd')[id - 1].value});
     //ui update
@@ -179,8 +178,6 @@ function deleteContents(id){
 }
 
 function fileNameUpdate(id){
-    console.log(id);
-    
     var filebtn = document.getElementsByClassName('filebtn');    
     var org = document.getElementsByClassName('original_cmd');
     org[id-1].setAttribute('value',filebtn[id-1].files[0].path);    
@@ -214,7 +211,7 @@ function searchCards(){
 
     for(var i=0;i<short.length;i++){
         if(((short[i].value.includes(search_text)) || (org[i].value.includes(search_text))) && search_text!=""){
-            cards[i].classList.remove('hide');
+            $(cards[i]).removeClass('hide');
         }
         else if(!cards[i].classList.contains('hide')){
             cards[i].classList.add('hide');
@@ -224,6 +221,7 @@ function searchCards(){
 $(document).ready(function(){
     ipcRenderer.send('finish-load');
 });
+
 document.addEventListener('DOMContentLoaded', function() {
     var elems = document.querySelectorAll('.fixed-action-btn');
     var instances = M.FloatingActionButton.init(elems, {

@@ -179,6 +179,8 @@ function deleteContents(id){
 }
 
 function fileNameUpdate(id){
+    console.log(id);
+    
     var filebtn = document.getElementsByClassName('filebtn');    
     var org = document.getElementsByClassName('original_cmd');
     org[id-1].setAttribute('value',filebtn[id-1].files[0].path);    
@@ -194,6 +196,31 @@ function addNewCard(){
     }
 }
 
+function hideCards(){
+    var cards = document.getElementsByClassName('card');
+    for(var i=0;i< cards.length;i++)cards[i].classList.add('hide');
+}
+function showCards(){
+    var cards = document.getElementsByClassName('card');
+    var search_text  = document.getElementById("search");
+    search_text.value = "";
+    for(var i=0;i< cards.length;i++)cards[i].classList.remove('hide');
+}
+function searchCards(){
+    var cards = document.getElementsByClassName('card');
+    var short = document.getElementsByClassName('shortcut_cmd');
+    var org = document.getElementsByClassName('original_cmd');
+    var search_text  = document.getElementById("search").value;
+
+    for(var i=0;i<short.length;i++){
+        if(((short[i].value.includes(search_text)) || (org[i].value.includes(search_text))) && search_text!=""){
+            cards[i].classList.remove('hide');
+        }
+        else if(!cards[i].classList.contains('hide')){
+            cards[i].classList.add('hide');
+        }
+    }
+}
 $(document).ready(function(){
     ipcRenderer.send('finish-load');
 });

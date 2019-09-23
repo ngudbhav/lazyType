@@ -35,9 +35,9 @@
 		  <div class="row center">
 				<nav>
 					<div class="nav-wrapper orange" class="col s8">
-						<form>
+						<form onsubmit="return false;">
 							<div class="input-field">
-							  <input id="search" type="search" required>
+							  <input id="search" onfocus="hideCards()" onfocusout="showCards()" onkeyup="searchCards(this)" type="search" required>
 							  <label class="label-icon" for="search"><i class="material-icons">search</i></label>
 							  <i class="material-icons">close</i>
 							</div>

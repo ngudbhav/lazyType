@@ -23,30 +23,30 @@ var addCard = `<div class="col s12">
                 <div class="row">
                     <form action="" class="col s12">
 
-                            <div class="input-field col s4">
+                            <div class="input-field col s4 orgcmd">
                                 <input  placeholder="Original Command"  type="text" class="validate original_cmd" >
                             </div>
 
-                            <div class= "file-field input-field col s2 ">
+                            <div class= "file-field input-field col s2 filediv">
                                     <div class="btn">
                                             <span>Choose File</span>
-                                            <input type="file" class="filebtn" onchange="fileNameUpdate(%%id%%)">
+                                            <input type="file" class="filebtn" onchange="fileNameUpdate(this)">
                                     </div>
                             </div>
                             <div class="input-field col s1 center">
                                     <i class=" medium material-icons" id="arrow">arrow_forward</i>
                             </div>
-                            <div class="input-field col s4">
+                            <div class="input-field col s4 shortcmd">
                                     <input placeholder="Shortcut Command"  type="text" class="validate shortcut_cmd" >
                             </div>
                             <div class="input-field col s1 center submit">
-                                <i class="material-icons submit-icon" onclick="submitContents(%%id%%)">send</i>
+                                <i class="material-icons submit-icon" onclick="submitContents(this)">send</i>
                             </div>
                             <div class="input-field col s1 right delete hide">
-                                <i class="material-icons delete-icon" onclick="deleteContents(%%id%%)">delete</i>
+                                <i class="material-icons delete-icon" onclick="deleteContents(this)">delete</i>
                             </div>
                             <div class="input-field col right center edit hide">
-                                    <i class="material-icons edit-icon" onclick="editContents(%%id%%)">edit</i>
+                                    <i class="material-icons edit-icon" onclick="editContents(this)">edit</i>
                             </div>																	
                     </form>
                 </div>		
@@ -63,30 +63,30 @@ var cardHtml =
                         <div class="row">
                             <form action="" class="col s12">
 
-                                    <div class="input-field col s4">
+                                    <div class="input-field col s4 orgcmd">
                                         <input disabled value="%%org_cmd%%" placeholder="Original Command"  type="text" class="validate original_cmd" >
                                     </div>
 
-                                    <div class= "file-field input-field col s2  hide" >
+                                    <div class= "file-field input-field col s2  hide filediv" >
                                             <div class="btn">
                                                     <span>Choose File</span>
-                                                    <input type="file" class="filebtn" onchange="fileNameUpdate(%%id%%)">
+                                                    <input type="file" class="filebtn" onchange="fileNameUpdate(this)">
                                             </div>
                                     </div>
                                     <div class="input-field col s1 center">
                                             <i class=" medium material-icons" id="arrow">arrow_forward</i>
                                     </div>
-                                    <div class="input-field col s4">
+                                    <div class="input-field col s4 shortcmd">
                                             <input disabled value="%%short_cmd%%" placeholder="Shortcut Command"  type="text" class="validate shortcut_cmd" >
                                     </div>
                                     <div class="input-field col s1 center hide submit">
-                                            <i class="material-icons submit-icon" onclick="submitContents(%%id%%)">send</i>
+                                            <i class="material-icons submit-icon" onclick="submitContents(this, %%id%%)">send</i>
                                         </div>
                                         <div class="input-field col s1 right delete ">
-                                            <i class="material-icons delete-icon" onclick="deleteContents(%%id%%)">delete</i>
+                                            <i class="material-icons delete-icon" onclick="deleteContents(this)">delete</i>
                                         </div>
                                         <div class="input-field col right center edit">
-                                                <i class="material-icons edit-icon" onclick="editContents(%%id%%)">edit</i>
+                                                <i class="material-icons edit-icon" onclick="editContents(this)">edit</i>
                                         </div>																	
                             </form>
                         </div>		
@@ -118,69 +118,50 @@ ipcRenderer.on('history', function(e, item){
     }
 });
 
-function editContents(id){
+function editContents(e){
     //ui update
-    var sub = document.getElementsByClassName('submit'); 
-    var del = document.getElementsByClassName('delete');
-    var edit = document.getElementsByClassName('edit');
-    var file = document.getElementsByClassName('file-field');
-    var org = document.getElementsByClassName('original_cmd');
-    var short = document.getElementsByClassName('shortcut_cmd');
-
-    file[id-1].classList.remove('hide');
-    sub[id-1].classList.remove('hide');
-    del[id-1].classList.add('hide');
-    edit[id-1].classList.add('hide');
-    org[id-1].removeAttribute('disabled');
-    short[id-1].removeAttribute('disabled');
-    
+    let p = $(e).parent();
+    p.siblings('.file-field').removeClass('hide');
+    p.siblings('.submit').removeClass('hide');
+    p.siblings('.delete').addClass('hide');
+    p.addClass('hide');
+    p.siblings('.orgcmd').children()[0].removeAttribute('disabled');
+    p.siblings('.shortcmd').children()[0].removeAttribute('disabled');
 }
 
-function submitContents(id){
-    var sub = document.getElementsByClassName('submit');
-    var del = document.getElementsByClassName('delete');
-    var edit = document.getElementsByClassName('edit');
-    var file = document.getElementsByClassName('file-field');
-    var org = document.getElementsByClassName('original_cmd');
-    var short = document.getElementsByClassName('shortcut_cmd');
-    var filebtn = document.getElementsByClassName('filebtn');
+function submitContents(e, id){
+    let p = $(e).parent();
+    let inf = p.siblings('.filediv').children('.btn').children("input")[0];
     // //save and update in database
-    let inf = filebtn[id-1];
-    
+    let orgcmd = p.siblings('.orgcmd').children().val();
+    let shortcmd = p.siblings('.shortcmd').children().val();
     let obj = {
-        name: short[id - 1].value,
-        path: org[id-1].value,
+        name: shortcmd,
+        path: orgcmd,
         switch: inf.files.length===0 ? 1 : 0 
     };
     ipcRenderer.send('addItem', obj);
-    //ui update
-    
-
-
-    file[id-1].classList.add('hide');
-    sub[id-1].classList.add('hide');
-    del[id-1].classList.remove('hide');
-    edit[id-1].classList.remove('hide');
-    org[id-1].setAttribute('disabled','disabled');
-    short[id-1].setAttribute('disabled','disabled');
-    org[id-1].setAttribute('value', org[id-1].value);
-    short[id-1].setAttribute('value', short[id-1].value);
-
+    p.siblings('.file-field').addClass('hide');
+    p.addClass('hide');
+    p.siblings('.delete').removeClass('hide');
+    p.siblings('.edit').removeClass('hide');
+    p.siblings('.orgcmd').children()[0].setAttribute('disabled', 'disabled');
+    p.siblings('.shortcmd').children()[0].setAttribute('disabled', 'disabled');
+    p.siblings('.orgcmd').children().val(orgcmd);
+    p.siblings('.shortcmd').children().val(shortcmd);    
 }
 
-function deleteContents(id){
+function deleteContents(e){
+    let p = $(e).parent();
     //delete from db
-    ipcRenderer.send('deleteItem', { name: document.getElementsByClassName('shortcut_cmd')[id - 1].value});
+    ipcRenderer.send('deleteItem', { name: p.siblings('.shortcmd').children().val()});
     //ui update
-    var card = document.getElementsByClassName('card');
-    card[id-1].classList.add('hide');
-
+    p.parents('.card').addClass('hide');
 }
 
-function fileNameUpdate(id){
-    var filebtn = document.getElementsByClassName('filebtn');    
-    var org = document.getElementsByClassName('original_cmd');
-    org[id-1].setAttribute('value',filebtn[id-1].files[0].path);    
+function fileNameUpdate(e){
+    let p = $(e).parents('.filediv');
+    p.siblings('.orgcmd').children().val($(e)[0].files[0].path)  
 }
 
 function addNewCard(){

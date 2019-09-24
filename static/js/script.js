@@ -13,6 +13,10 @@ ipcRenderer.on('status', function(e, item){
                 break;
         case 3:M.toast({html: 'Updated Successfully &nbsp<i class="material-icons">check_circle</i>',classes:'orange white-text left',displayLength:2000});
                 break;
+        case 4:M.toast({html: 'No updates Available &nbsp<i class="material-icons">check_circle</i>',classes:'orange white-text left',displayLength:2000});
+                break;
+        case 5: M.toast({ html: 'Connection Error &nbsp<i class="material-icons">cancel</i>', classes: 'orange white-text left', displayLength: 2000 });
+                break;
     }  
 });
 
@@ -24,7 +28,7 @@ var addCard = `<div class="col s12">
                     <form action="" class="col s12">
 
                             <div class="input-field col s4 orgcmd">
-                                <input  placeholder="Original Command"  type="text" class="validate original_cmd" >
+                                <input  placeholder="Original Command"  type="text" class="validate original_cmd">
                             </div>
 
                             <div class= "file-field input-field col s2 filediv">
@@ -37,7 +41,7 @@ var addCard = `<div class="col s12">
                                     <i class=" medium material-icons" id="arrow">arrow_forward</i>
                             </div>
                             <div class="input-field col s4 shortcmd">
-                                    <input placeholder="Shortcut Command"  type="text" class="validate shortcut_cmd" >
+                                    <input placeholder="Shortcut Command"  type="text" class="validate shortcut_cmd" onkeyup="preSubmit(this, event);">
                             </div>
                             <div class="input-field col s1 center submit">
                                 <i class="material-icons submit-icon" onclick="submitContents(this)">send</i>
@@ -118,6 +122,24 @@ ipcRenderer.on('history', function(e, item){
     }
 });
 
+function help(){
+    ipcRenderer.send('help', 'null');
+    M.toast({ html: 'Check your Browser &nbsp<i class="material-icons">circle_check</i>', classes: 'orange white-text left', displayLength: 2000 });
+}
+
+function checkUpdates() {
+    ipcRenderer.send('update', 'null');
+}
+
+function preSubmit(f, e){
+    if(e.keyCode === 13){
+        submitContents(f);
+    }
+    else{
+        return false;
+    }
+}
+
 function editContents(e){
     //ui update
     let p = $(e).parent();
@@ -129,26 +151,31 @@ function editContents(e){
     p.siblings('.shortcmd').children()[0].removeAttribute('disabled');
 }
 
-function submitContents(e, id){
+function submitContents(e){
     let p = $(e).parent();
-    let inf = p.siblings('.filediv').children('.btn').children("input")[0];
-    // //save and update in database
     let orgcmd = p.siblings('.orgcmd').children().val();
     let shortcmd = p.siblings('.shortcmd').children().val();
-    let obj = {
-        name: shortcmd,
-        path: orgcmd,
-        switch: inf.files.length===0 ? 1 : 0 
-    };
-    ipcRenderer.send('addItem', obj);
-    p.siblings('.file-field').addClass('hide');
-    p.addClass('hide');
-    p.siblings('.delete').removeClass('hide');
-    p.siblings('.edit').removeClass('hide');
-    p.siblings('.orgcmd').children()[0].setAttribute('disabled', 'disabled');
-    p.siblings('.shortcmd').children()[0].setAttribute('disabled', 'disabled');
-    p.siblings('.orgcmd').children().val(orgcmd);
-    p.siblings('.shortcmd').children().val(shortcmd);    
+    if(orgcmd && shortcmd){
+        let inf = p.siblings('.filediv').children('.btn').children("input")[0];
+        // //save and update in database
+        let obj = {
+            name: shortcmd,
+            path: orgcmd,
+            switch: inf.files.length === 0 ? 1 : 0
+        };
+        ipcRenderer.send('addItem', obj);
+        p.siblings('.file-field').addClass('hide');
+        p.addClass('hide');
+        p.siblings('.delete').removeClass('hide');
+        p.siblings('.edit').removeClass('hide');
+        p.siblings('.orgcmd').children()[0].setAttribute('disabled', 'disabled');
+        p.siblings('.shortcmd').children()[0].setAttribute('disabled', 'disabled');
+        p.siblings('.orgcmd').children().val(orgcmd);
+        p.siblings('.shortcmd').children().val(shortcmd);    
+    }
+    else{
+        M.toast({ html: 'Incomplete Details &nbsp<i class="material-icons">cancel</i>', classes: 'orange white-text left', displayLength: 2000 });
+    }
 }
 
 function deleteContents(e){

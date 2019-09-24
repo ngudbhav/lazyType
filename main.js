@@ -1,6 +1,7 @@
-const {app, BrowserWindow, ipcMain} = require('electron');
+const {app, BrowserWindow, ipcMain, shell} = require('electron');
 const path = require('path');
 const fs = require('fs');
+const request = require('request');
 
 const nedb = require('nedb');
 const history = new nedb({
@@ -26,6 +27,7 @@ function createMainWindow(){
 	mainScreen.on('closed', function(){
 		loginScreen = null;
 	});
+	//checkUpdates();
 }
 ipcMain.on('finish-load', function(e, item){
 	history.find({}, function (error, results) {
@@ -42,6 +44,57 @@ ipcMain.on('addItem', function(e, item){
 ipcMain.on('deleteItem', function(e, item){
 	deleteItem(item, 1);
 });
+function checkUpdates(e) {
+	request('https://api.github.com/repos/ngudbhav/lazyType/releases/latest', { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:59.0) Gecko/20100101 ' } }, function (error, html, body) {
+		if (!error) {
+			var v = app.getVersion().replace(' ', '');
+			var latestV = JSON.parse(body).tag_name.replace('v', '');
+			var changeLog = JSON.parse(body).body.replace('<strong>Changelog</strong>', 'Update available. Here are the changes:\n');
+			if (latestV != v) {
+				dialog.showMessageBox(
+					{
+						type: 'info',
+						buttons: ['Open Browser to download link', 'Close'],
+						title: 'Update Available',
+						detail: changeLog,
+					}, function (response) {
+						if (response === 0) {
+							shell.openExternal('https://github.com/ngudbhav/lazyType/releases/latest');
+						}
+					}
+				);
+				notifier.notify(
+					{
+						appName: "NGUdbhav.lazy",
+						title: 'Update Available',
+						message: 'A new version is available. Click to open browser and download.',
+						icon: path.join(__dirname, 'images', 'logo.ico'),
+						sound: true,
+						wait: true
+					});
+				notifier.on('click', function (notifierObject, options) {
+					shell.openExternal('https://github.com/ngudbhav/lazyType/releases/latest');
+				});
+			}
+			else {
+				if (e === 'f') {
+					mainScreen.webContents.send('status', { name: data.name, status: 4 });					
+				}
+			}
+		}
+		else {
+			if (e === 'f') {
+				mainScreen.webContents.send('status', { name: data.name, status: 5 });
+			}
+		}
+	});
+}
+ipcMain.on('update', function (e, item) {
+	checkUpdates('f');
+});
+ipcMain.on('help', function(e, item){
+	shell.openExternal('https://github.com/ngudbhav/lazyType');
+})
 
 function addItem(data){
 	//{

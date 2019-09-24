@@ -124,3 +124,7 @@ color:#26a69a;
 .material-tooltip{
   background-color:#ff9800;
 }
+
+.container-after-titlebar{
+  overflow: scroll !important;
+}

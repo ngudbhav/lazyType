@@ -183,7 +183,8 @@ function deleteContents(e){
     //delete from db
     ipcRenderer.send('deleteItem', { name: p.siblings('.shortcmd').children().val()});
     //ui update
-    p.parents('.card').addClass('hide');
+    p.parents('.card').parent().remove();
+    
 }
 
 function fileNameUpdate(e){
@@ -192,7 +193,7 @@ function fileNameUpdate(e){
 }
 
 function addNewCard(){
-    if(countCards > 0){
+    if(countCards >= 0){
         var card = document.getElementById('cardBody');
         var newHtml = addCard;
         countCards++;

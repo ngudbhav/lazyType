@@ -28,7 +28,7 @@ var addCard = `<div class="col s12">
                     <form action="" class="col s12">
 
                             <div class="input-field col s4 orgcmd">
-                                <input  placeholder="Original Command"  type="text" class="validate original_cmd">
+                                <input  placeholder="Original Command"  type="text" class=" original_cmd">
                             </div>
 
                             <div class= "file-field input-field col s2 filediv">
@@ -41,7 +41,7 @@ var addCard = `<div class="col s12">
                                     <i class=" medium material-icons" id="arrow">arrow_forward</i>
                             </div>
                             <div class="input-field col s4 shortcmd">
-                                    <input placeholder="Shortcut Command"  type="text" class="validate shortcut_cmd" onkeyup="preSubmit(this, event);">
+                                    <input placeholder="Shortcut Command"  type="text" class=" shortcut_cmd" onkeyup="preSubmit(this, event);">
                             </div>
                             <div class="input-field col s1 center submit">
                                 <i class="material-icons submit-icon" onclick="submitContents(this)">send</i>
@@ -68,7 +68,7 @@ var cardHtml =
                             <form action="" class="col s12">
 
                                     <div class="input-field col s4 orgcmd">
-                                        <input disabled value="%%org_cmd%%" placeholder="Original Command"  type="text" class="validate original_cmd" >
+                                        <input disabled value="%%org_cmd%%" placeholder="Original Command"  type="text" class=" original_cmd" >
                                     </div>
 
                                     <div class= "file-field input-field col s2  hide filediv" >
@@ -81,7 +81,7 @@ var cardHtml =
                                             <i class=" medium material-icons" id="arrow">arrow_forward</i>
                                     </div>
                                     <div class="input-field col s4 shortcmd">
-                                            <input disabled value="%%short_cmd%%" placeholder="Shortcut Command"  type="text" class="validate shortcut_cmd" >
+                                            <input disabled value="%%short_cmd%%" placeholder="Shortcut Command"  type="text" class=" shortcut_cmd" >
                                     </div>
                                     <div class="input-field col s1 center hide submit">
                                             <i class="material-icons submit-icon" onclick="submitContents(this, %%id%%)">send</i>
@@ -154,9 +154,8 @@ function editContents(e){
 function submitContents(e){
     let p = $(e).parent();
     let orgcmd = p.siblings('.orgcmd').children().val();
-    let shortcmd = p.siblings('.shortcmd').children().val();
-    console.log(orgcmd,shortcmd);
-    
+    let shortcmd = p.siblings('.shortcmd').addBack().children().val();
+        
     if(orgcmd && shortcmd){
         let inf = p.siblings('.filediv').children('.btn').children("input")[0];
         // //save and update in database
@@ -167,13 +166,18 @@ function submitContents(e){
         };
         ipcRenderer.send('addItem', obj);
         p.siblings('.file-field').addClass('hide');
-        p.addClass('hide');
+        if(p.siblings('.shortcmd').length == 0){
+            p.siblings('.submit').addClass('hide');
+        }
+        else{
+            p.siblings('.submit').addBack().addClass('hide');
+        }
         p.siblings('.delete').removeClass('hide');
         p.siblings('.edit').removeClass('hide');
         p.siblings('.orgcmd').children()[0].setAttribute('disabled', 'disabled');
-        p.siblings('.shortcmd').children()[0].setAttribute('disabled', 'disabled');
+        p.siblings('.shortcmd').addBack().children()[0].setAttribute('disabled', 'disabled');
         p.siblings('.orgcmd').children().val(orgcmd);
-        p.siblings('.shortcmd').children().val(shortcmd);    
+        p.siblings('.shortcmd').addBack().children().val(shortcmd);    
         countCards++;
     }
     else{

@@ -85,13 +85,13 @@ var cardHtml =
                                     </div>
                                     <div class="input-field col s1 center hide submit">
                                             <i class="material-icons submit-icon" onclick="submitContents(this, %%id%%)">send</i>
-                                        </div>
-                                        <div class="input-field col s1 right delete ">
+                                    </div>
+                                    <div class="input-field col s1 right delete ">
                                             <i class="material-icons delete-icon" onclick="deleteContents(this)">delete</i>
-                                        </div>
-                                        <div class="input-field col right center edit">
-                                                <i class="material-icons edit-icon" onclick="editContents(this)">edit</i>
-                                        </div>																	
+                                    </div>
+                                    <div class="input-field col right center edit">
+                                        <i class="material-icons edit-icon" onclick="editContents(this)">edit</i>
+                                    </div>																	
                             </form>
                         </div>		
                 </span>
@@ -155,6 +155,8 @@ function submitContents(e){
     let p = $(e).parent();
     let orgcmd = p.siblings('.orgcmd').children().val();
     let shortcmd = p.siblings('.shortcmd').children().val();
+    console.log(orgcmd,shortcmd);
+    
     if(orgcmd && shortcmd){
         let inf = p.siblings('.filediv').children('.btn').children("input")[0];
         // //save and update in database
@@ -172,6 +174,7 @@ function submitContents(e){
         p.siblings('.shortcmd').children()[0].setAttribute('disabled', 'disabled');
         p.siblings('.orgcmd').children().val(orgcmd);
         p.siblings('.shortcmd').children().val(shortcmd);    
+        countCards++;
     }
     else{
         M.toast({ html: 'Incomplete Details &nbsp<i class="material-icons">cancel</i>', classes: 'orange white-text left', displayLength: 2000 });
@@ -184,7 +187,6 @@ function deleteContents(e){
     ipcRenderer.send('deleteItem', { name: p.siblings('.shortcmd').children().val()});
     //ui update
     p.parents('.card').parent().remove();
-    
 }
 
 function fileNameUpdate(e){
@@ -193,10 +195,9 @@ function fileNameUpdate(e){
 }
 
 function addNewCard(){
-    if(countCards >= 0){
+    if(countCards > 0){
         var card = document.getElementById('cardBody');
         var newHtml = addCard;
-        countCards++;
         newHtml = newHtml.replace(/%%id%%/gi, countCards);
         card.innerHTML = newHtml + card.innerHTML;
     }

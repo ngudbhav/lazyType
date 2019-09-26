@@ -17,7 +17,9 @@ history.loadDatabase();
 let mainScreen;
 function createMainWindow(){
 	//Create login screen
-	mainScreen = new BrowserWindow({width: 1000, height: 600, webPreferences: {
+	mainScreen = new BrowserWindow({
+		width: 1000, height: 600, minHeight: 600,
+		minWidth: 1000,webPreferences: {
 		nodeIntegration: true
 	},frame:false});
 	mainScreen.loadFile(path.join(__dirname, 'views', 'main.html'));

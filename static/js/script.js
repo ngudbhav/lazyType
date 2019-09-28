@@ -186,11 +186,15 @@ function submitContents(e){
 }
 
 function deleteContents(e){
-    let p = $(e).parent();
-    //delete from db
-    ipcRenderer.send('deleteItem', { name: p.siblings('.shortcmd').children().val()});
-    //ui update
-    p.parents('.card').parent().remove();
+    let sure = confirm('Are you sure you want to delete shortcut ?');
+    if(sure){
+        let p = $(e).parent();
+        //delete from db
+        ipcRenderer.send('deleteItem', { name: p.siblings('.shortcmd').children().val()});
+        //ui update
+        p.parents('.card').parent().remove();
+    }
+    
 }
 
 function fileNameUpdate(e){

@@ -17,6 +17,8 @@ ipcRenderer.on('status', function(e, item){
                 break;
         case 5: M.toast({ html: 'Connection Error &nbsp<i class="material-icons">cancel</i>', classes: 'orange white-text left', displayLength: 2000 });
                 break;
+        case 6: M.toast({ html: 'Backup Created Successfully &nbsp<i class="material-icons">cancel</i>', classes: 'orange white-text left', displayLength: 2000 });
+                break;
     }  
 });
 

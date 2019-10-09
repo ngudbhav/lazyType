@@ -19,6 +19,8 @@ ipcRenderer.on('status', function(e, item){
                 break;
         case 6: M.toast({ html: 'Backup Created Successfully &nbsp<i class="material-icons">cancel</i>', classes: 'orange white-text left', displayLength: 2000 });
                 break;
+        case 7: M.toast({ html: 'Loading ...&nbsp', classes: 'orange white-text left', displayLength: 2000 });
+                break;
     }  
 });
 
@@ -131,6 +133,10 @@ function help(){
 
 function checkUpdates() {
     ipcRenderer.send('update', 'null');
+}
+
+function config(){
+    ipcRenderer.send('config');
 }
 
 function preSubmit(f, e){

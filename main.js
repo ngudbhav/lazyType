@@ -1,7 +1,11 @@
-const {app, BrowserWindow, ipcMain, shell} = require('electron');
+const {app, BrowserWindow, ipcMain, shell, dialog} = require('electron');
 const path = require('path');
 const fs = require('fs');
 const request = require('request');
+const sudo = require('sudo-prompt');
+//
+//Releases and then compile c++ to form 2 exe seperate.
+//Same for the tests.While executing the tests, Ask for a switch  to ask for admin
 
 const nedb = require('nedb');
 const history = new nedb({
@@ -96,7 +100,54 @@ ipcMain.on('update', function (e, item) {
 });
 ipcMain.on('help', function(e, item){
 	shell.openExternal('https://github.com/ngudbhav/lazyType');
-})
+});
+ipcMain.on('config', function(e, item){
+	//extract the current path
+	let appDir = app.getAppPath()+'\\bin';
+	//check if system is already configured
+	if(!process.env.PATH.includes(appDir)){
+		dialog.showMessageBox(mainScreen, {
+			type: "info",
+			buttons: ["Ok", "Cancel"],
+			title: "Configuration",
+			message: "Configuration process takes some time depending on your computer. The system may ask for admin rights."
+		}, function (response) {
+			//0 => Yes
+			//1 => No
+			if (!response) {
+				mainScreen.webContents.send('status', { status: 7 });
+				//ask for admin rights and invoke the output of config.cpp as new.exe
+				sudo.exec('new.exe', {
+					name: 'Lazy Type'
+				}, function (error, stdout, stderr) {
+					if (error) throw error;
+					else {
+						if (stdout == 0) {
+							mainScreen.webContents.send('status', { status: 3 });
+							dialog.showMessageBox(mainScreen, {
+								type: "info",
+								buttons: ["Ok"],
+								title: "Configuration",
+								message: "The system is configured. Please restart the software. If the commands still do not work, try reinstalling the program."
+							});
+						}
+						else {
+							dialog.showErrorBox('Lazy Type', 'There seems to be an error. ' + stdout);
+						}
+					}
+				});
+			}
+		});
+	}
+	else{
+		dialog.showMessageBox(mainScreen, {
+			type: "info",
+			buttons: ["Ok"],
+			title: "Configuration",
+			message: "The system is already configured. If the commands still do not work, try reinstalling the program."
+		});
+	}
+});
 
 function addItem(data){
 	//{

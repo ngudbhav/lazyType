@@ -20,7 +20,8 @@
     "custom-electron-titlebar": "^3.1.0",
     "jquery": "^3.4.1",
     "materialize-css": "^1.0.0-rc.2",
-    "nedb": "^1.8.0"
+    "nedb": "^1.8.0",
+    "sudo-prompt": "^9.0.0"
   },
   "devDependencies": {
     "electron": "^6.0.9"

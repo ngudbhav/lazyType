@@ -139,6 +139,10 @@ function config(){
     ipcRenderer.send('config');
 }
 
+function backup(){
+    ipcRenderer.send('backup');
+}
+
 function preSubmit(f, e){
     if(e.keyCode === 13){
         submitContents(f);

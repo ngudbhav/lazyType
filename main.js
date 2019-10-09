@@ -149,6 +149,34 @@ ipcMain.on('config', function(e, item){
 	}
 });
 
+ipcMain.on('backup', function(e, item){
+	dialog.showMessageBox(mainScreen, {
+		type: "info",
+		buttons: ["Ok"],
+		title: "Backup",
+		message: "You are now going to save a backup file on your system. For instructions on how to restore, click get help inside the program. Click Ok to continue."
+	}, function(response){
+		dialog.showSaveDialog(mainScreen, {
+			title: 'Save the backup file',
+			defaultPath: 'history.db'
+		}, function(filePath){
+				if(filePath){
+					fs.copyFile(app.getPath('appData') + '/lazyType/data/history.db', filePath, function(error){
+						if(error) throw error;
+						else{
+							dialog.showMessageBox(mainScreen, {
+								type: 'info',
+								buttons: ["Ok"],
+								title: 'Backup',
+								message: "The backup file has been successfully saved."
+							});
+						}
+					});
+				}
+		});
+	});
+});
+
 function addItem(data){
 	//{
 	//	name: ""//New command name.

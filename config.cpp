@@ -13,9 +13,10 @@ int main(int argc, char **argv)
     else{
         GetCurrentDirectory(MAX_PATH, path);
     }
-    //Add the bin folder to the current working directory
-    strcat((char *)path, "\\bin\"");
     std::string p = (char *)path;
+    //Add the bin folder to the current working directory
+    p = p+"\\bin\"";
+    //strcat((char *)path, "\\bin\"");
     cmd = cmd + p;
     //Cast to const char *
     const char *cstr = cmd.c_str();

@@ -65,3 +65,4 @@ typings/
 .vscode
 new.exe
 ConfigUtility.exe
+resource.rc

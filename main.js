@@ -117,7 +117,7 @@ ipcMain.on('config', function(e, item){
 			if (!response) {
 				mainScreen.webContents.send('status', { status: 7 });
 				//ask for admin rights and invoke the output of config.cpp as new.exe
-				sudo.exec('new.exe', {
+				sudo.exec('ConfigUtility.exe', {
 					name: 'Lazy Type'
 				}, function (error, stdout, stderr) {
 					if (error) throw error;

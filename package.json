@@ -4,7 +4,9 @@
   "description": "A Software to create aliases for commands, applications to type in cmd, terminal.",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "build": "electron-packager . LazyType --overwrite --asar=true --platform=win32 --arch=x64 --icon=images/logo.ico --prune=true --out=release-builds --version-string.CompanyName=NGUdbhav --version-string.FileDescription=Application --version-string.ProductName=\"LazyType\" && g++ config.cpp -o release-builds\\ConfigUtility.exe resource.res",
+    "test": "g++ config.cpp -o ConfigUtility.exe resource.res && mocha"
   },
   "repository": {
     "type": "git",
@@ -24,6 +26,8 @@
     "sudo-prompt": "^9.0.0"
   },
   "devDependencies": {
-    "electron": "^6.0.9"
+    "electron": "^6.0.9",
+    "mocha": "^6.2.1",
+    "spectron": "^8.0.0"
   }
 }

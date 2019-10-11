@@ -5,7 +5,8 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-packager . LazyType --overwrite --asar=true --platform=win32 --arch=x64 --icon=images/logo.ico --prune=true --out=release-builds --version-string.CompanyName=NGUdbhav --version-string.FileDescription=Application --version-string.ProductName=\"LazyType\" && g++ config.cpp -o release-builds\\ConfigUtility.exe resource.res",
+    "build64": "electron-packager . LazyType --overwrite --asar=true --platform=win32 --arch=x64 --icon=icons/win/app.ico --prune=true --out=release-builds --version-string.CompanyName=NGUdbhav --version-string.FileDescription=Application --version-string.ProductName=\"LazyType\" && g++ config.cpp -o release-builds\\ConfigUtility.exe resource.res",
+    "build32": "electron-packager . LazyType --overwrite --asar=true --platform=win32 --arch=ia32 --icon=icons/win/app.ico --prune=true --out=release-builds --version-string.CompanyName=NGUdbhav --version-string.FileDescription=Application --version-string.ProductName=\"LazyType\" && g++ config.cpp -o release-builds\\ConfigUtility.exe resource.res",    
     "test": "g++ config.cpp -o ConfigUtility.exe resource.res && mocha"
   },
   "repository": {

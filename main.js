@@ -22,7 +22,7 @@ let mainScreen;
 function createMainWindow(){
 	//Create login screen
 	mainScreen = new BrowserWindow({
-		width: 1000, height: 600, minHeight: 600,
+		width: 1000, height: 600, minHeight: 600, icon: 'icons/win/app.ico',
 		minWidth: 1000,webPreferences: {
 		nodeIntegration: true
 	},frame:false});

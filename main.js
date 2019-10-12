@@ -3,9 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const request = require('request');
 const sudo = require('sudo-prompt');
-//
-//Releases and then compile c++ to form 2 exe seperate.
-//Same for the tests.While executing the tests, Ask for a switch  to ask for admin
+const appDir = app.getAppPath() + '\\bin';
 
 const nedb = require('nedb');
 const history = new nedb({
@@ -29,7 +27,7 @@ function createMainWindow(){
 	mainScreen.loadFile(path.join(__dirname, 'views', 'main.html'));
 	mainScreen.setMenu(null);
 	mainScreen.removeMenu();
-	mainScreen.openDevTools();
+	//mainScreen.openDevTools();
 	mainScreen.on('closed', function(){
 		loginScreen = null;
 	});
@@ -69,15 +67,14 @@ function checkUpdates(e) {
 						}
 					}
 				);
-				notifier.notify(
-					{
+				notifier.notify({
 						appName: "NGUdbhav.lazy",
 						title: 'Update Available',
 						message: 'A new version is available. Click to open browser and download.',
 						icon: path.join(__dirname, 'images', 'logo.ico'),
 						sound: true,
 						wait: true
-					});
+				});
 				notifier.on('click', function (notifierObject, options) {
 					shell.openExternal('https://github.com/ngudbhav/lazyType/releases/latest');
 				});
@@ -103,7 +100,6 @@ ipcMain.on('help', function(e, item){
 });
 ipcMain.on('config', function(e, item){
 	//extract the current path
-	let appDir = app.getAppPath()+'\\bin';
 	//check if system is already configured
 	if(!process.env.PATH.includes(appDir)){
 		dialog.showMessageBox(mainScreen, {
@@ -128,7 +124,9 @@ ipcMain.on('config', function(e, item){
 								type: "info",
 								buttons: ["Ok"],
 								title: "Configuration",
-								message: "The system is configured. Please restart the software. If the commands still do not work, try reinstalling the program."
+								message: "The system is configured. The software must be restarted to save the new configuration changes. Click Ok to quit the app."
+							}, function(response){
+								app.quit(0);
 							});
 						}
 						else {
@@ -152,18 +150,20 @@ ipcMain.on('config', function(e, item){
 ipcMain.on('backup', function(e, item){
 	dialog.showMessageBox(mainScreen, {
 		type: "info",
-		buttons: ["Ok"],
-		title: "Backup",
-		message: "You are now going to save a backup file on your system. For instructions on how to restore, click get help inside the program. Click Ok to continue."
+		buttons: ["Backup", "Restore", "Cancel"],
+		title: "Backup/Restore",
+		message: "Choose the directory where you want to keep your backup file. While restoring, Browse to the file."
 	}, function(response){
-		dialog.showSaveDialog(mainScreen, {
-			title: 'Save the backup file',
-			defaultPath: 'history.db'
-		}, function(filePath){
-				if(filePath){
-					fs.copyFile(app.getPath('appData') + '/lazyType/data/history.db', filePath, function(error){
-						if(error) throw error;
-						else{
+		if(response === 0){
+			//Backup
+			dialog.showSaveDialog(mainScreen, {
+				title: 'Save the backup file',
+				defaultPath: 'history.db'
+			}, function (filePath) {
+				if (filePath) {
+					fs.copyFile(app.getPath('appData') + '/lazyType/data/history.db', filePath, function (error) {
+						if (error) throw error;
+						else {
 							dialog.showMessageBox(mainScreen, {
 								type: 'info',
 								buttons: ["Ok"],
@@ -173,7 +173,43 @@ ipcMain.on('backup', function(e, item){
 						}
 					});
 				}
-		});
+			});
+		}
+		else if(response === 1){
+			//restore
+			dialog.showOpenDialog(mainScreen, {
+				properties: ['openFile'],
+				filters: [
+					{
+						name: 'LazyType Backup', extensions: ['db']
+					}
+				]
+			}, function (filePath) {
+				if (filePath[0]) {
+					let tempFile = new nedb({
+						filename: filePath[0]
+					});
+					tempFile.loadDatabase();
+					tempFile.find({}, function (error, results) {
+						if (error) throw error;
+						else {
+							for (let i = 0; i < results.length; i++) {
+								addItem(results[i]);
+							}
+						}
+						dialog.showMessageBox(mainScreen, {
+							type: "info",
+							title: "restore",
+							buttons: ["Ok"],
+							message: "The backup has been successfully restored. The software will now restart."
+						}, function(response){
+							app.relaunch();
+							app.quit(0);
+						});
+					});
+				}
+			});
+		}
 	});
 });
 
@@ -217,11 +253,11 @@ function createItem(data){
 	//Create file and add entry into the database
 	//Both cases differ by switch 1/0.
 	if(data.switch === 0){
-		fs.writeFile('./env/'+data.name+'.cmd', '@echo off\nstart "" /B \"'+data.path+' %*\"', function (error) {
+		fs.writeFile(appDir+'\\'+data.name+'.cmd', '@echo off\nstart "" /B \"'+data.path+' %*\"', function (error) {
 			if (error) throw error;
 			else{
 				//History entry
-				history.insert({"name":data.name, "path":data.path}, function(error){
+				history.insert({ "name": data.name, "path": data.path, "switch": data.switch}, function(error){
 					if(error) throw error;
 					else{
 						mainScreen.webContents.send('status', { name: data.name, status: 1 });
@@ -231,11 +267,11 @@ function createItem(data){
 		});
 	}
 	else{
-		fs.writeFile('./env/'+data.name+'.cmd', "@echo off\n"+data.path+" %*", function (error) {
+		fs.writeFile(appDir + '\\' +data.name+'.cmd', "@echo off\n"+data.path+" %*", function (error) {
 			if (error) throw error;
 			else{
 				//History entry
-				history.insert({"name": data.name,"path": data.path}, function (error) {
+				history.insert({ "name": data.name, "path": data.path, "switch": data.switch}, function (error) {
 					if (error) throw error;
 					else{
 						mainScreen.webContents.send('status', {name:data.name, status:1});
@@ -248,7 +284,7 @@ function createItem(data){
 }
 function deleteItem(data, flag){
 	//Delete the command
-	fs.unlink("./env/"+data.name+".cmd", function(error){
+	fs.unlink(appDir + '\\' +data.name+".cmd", function(error){
 		if(error) throw error;
 		else{
 			history.remove({name: data.name}, {multi: true});
@@ -259,10 +295,10 @@ function deleteItem(data, flag){
 function updateItem(data, oname){
 	//Just renaming the command will invoke the file
 	//Previous Name -> New Name
-	fs.rename('./env/'+oname+'.cmd', './env/'+data.name+'.cmd', function (error) {
+	fs.rename(appDir + '\\' + oname + '.cmd', appDir + '\\' +data.name+'.cmd', function (error) {
 		if (error) throw error;
 		else{
-			history.update({"name":data.oname}, {$set:{"name":data.name}}, {}, function(error){
+			history.update({"name":oname}, {$set:{"name":data.name}}, {multi: true}, function(error){
 				if(error) throw error;
 				else{
 					mainScreen.webContents.send('status', { name: data.name, status: 3 });

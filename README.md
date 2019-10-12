@@ -27,4 +27,6 @@ Setupx64.exe => Full Windows install for 64-bit Windows.
 Setupx86.exe => Full Windows install for 32-bit Windows.
 ```
 
+<a href="https://www.buymeacoffee.com/ngudbhav" target="_blank"><img src="https://bmc-cdn.nyc3.digitaloceanspaces.com/BMC-button-images/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: auto !important;width: auto !important;" ></a>
+
 ## Do rate and give Feedback

@@ -54,7 +54,7 @@ Big Kudos to <a href="http://github.com/hit-11">Hitesh Peswani</a> for his incre
 
 We encourage you to contribute to Lazy Type!
 
-We expect contributors to abide by our underlying [code of conduct](./.github/CODE_OF_CONDUCT.md).
+We expect contributors to abide by our underlying [code of conduct](./CODE_OF_CONDUCT.md).
 All conversations and discussions on GitHub (issues, pull requests)
 must be respectful and harassment-free.
 

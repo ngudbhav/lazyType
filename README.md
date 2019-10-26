@@ -1,17 +1,16 @@
-<p align="center">
+
 [![Release](https://img.shields.io/badge/Release-1.0.0-green.svg)](https://github.com/ngudbhav/lazyType/releases)
 [![Dependencies](https://img.shields.io/david/ngudbhav/lazyType.svg)](https://github.com/ngudbhav/lazyType/blob/master/package.json)
 [![Downloads](https://img.shields.io/github/downloads/ngudbhav/lazyType/total.svg)](https://github.com/ngudbhav/lazyType/releases)
 [![Last-Release](https://img.shields.io/github/release-date/ngudbhav/lazyType.svg)](https://github.com/ngudbhav/lazType/releases)
 [![Platforms](https://img.shields.io/badge/platform-win-green.svg)](https://github.com/ngudbhav/lazyType/releases)
-</p>
 
-<h1 align="center"> Lazy Type</h1>
-<h3 align="center">
+# Lazy Type
+
 A Software to create aliases for commands, applications to type in cmd, terminal. Just type the original command and type an alias for it. You can also assign a program for it. Browse through the directory to find the program or anything executable using the command line and you can create an alias for the same. Only Windows is supported for releases.
-</h3>
+
 <h4 align="center">
-<a href="https://github.com/ngudbhav/lazyType/releases/download/v1.0.0/Setupx64.exe">Download for Windows (x64)</a><a href="https://github.com/ngudbhav/lazyType/releases/download/v1.0.0/Setupx86.exe">Download for Windows (x86)</a></h4>
+<a href="https://github.com/ngudbhav/lazyType/releases/download/v1.0.0/Setupx64.exe">Download for Windows (x64) </a><a href="https://github.com/ngudbhav/lazyType/releases/download/v1.0.0/Setupx86.exe"> Download for Windows (x86)</a></h4>
 
 ![IMG Page](static/images/ss1.png)
 

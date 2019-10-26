@@ -5,7 +5,7 @@
 !define PRODUCT_VERSION "1.0.0"
 !define PRODUCT_PUBLISHER "NGUdbhav"
 !define PRODUCT_WEB_SITE "https://github.com/ngudbhav/lazyType"
-!define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\ConfigUtility.exe"
+!define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\LazyType.exe"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
 
@@ -59,7 +59,9 @@ Section "MainSection" SEC01
   File "release-builds\LazyType-win32-x64\LazyType.exe"
   CreateDirectory "$SMPROGRAMS\LazyType"
   CreateShortCut "$SMPROGRAMS\LazyType\LazyType.lnk" "$INSTDIR\LazyType.exe"
+  WinShell::SetLnkAUMI "$SMPROGRAMS\LazyType\LazyType.lnk" "NGUdbhav.lazy"
   CreateShortCut "$DESKTOP\LazyType.lnk" "$INSTDIR\LazyType.exe"
+  WinShell::SetLnkAUMI "$DESKTOP\LazyType.lnk" "NGUdbhav.lazy"
   File "release-builds\LazyType-win32-x64\libEGL.dll"
   File "release-builds\LazyType-win32-x64\libGLESv2.dll"
   File "release-builds\LazyType-win32-x64\LICENSE"
@@ -135,16 +137,20 @@ Section "MainSection" SEC01
   File "release-builds\LazyType-win32-x64\version"
 SectionEnd
 
+Section Plugin
+  ApplicationID::Set "$SMPROGRAMS\$StartMenuFolder\${PRODUCT_NAME}.lnk" "NGUdbhav.lazy"
+SectionEnd
+
 Section -AdditionalIcons
   CreateShortCut "$SMPROGRAMS\LazyType\Uninstall.lnk" "$INSTDIR\uninst.exe"
 SectionEnd
 
 Section -Post
   WriteUninstaller "$INSTDIR\uninst.exe"
-  WriteRegStr HKLM "${PRODUCT_DIR_REGKEY}" "" "$INSTDIR\ConfigUtility.exe"
+  WriteRegStr HKLM "${PRODUCT_DIR_REGKEY}" "" "$INSTDIR\LazyType.exe"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "$(^Name)"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$INSTDIR\uninst.exe"
-  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$INSTDIR\ConfigUtility.exe"
+  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$INSTDIR\LazyType.exe"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayVersion" "${PRODUCT_VERSION}"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "URLInfoAbout" "${PRODUCT_WEB_SITE}"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"

@@ -15,8 +15,9 @@ int main(int argc, char **argv)
     }
     std::string p = (char *)path;
     //Add the bin folder to the current working directory
-    p = p+"\\bin\"";
-    //strcat((char *)path, "\\bin\"");
+    if(!argv[1]){
+        p = p+"\\bin\"";
+    }//strcat((char *)path, "\\bin\"");
     cmd = cmd + p;
     //Cast to const char *
     const char *cstr = cmd.c_str();

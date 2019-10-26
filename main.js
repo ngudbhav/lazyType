@@ -3,8 +3,12 @@ const path = require('path');
 const fs = require('fs');
 const request = require('request');
 const sudo = require('sudo-prompt');
-const appDir = app.getAppPath() + '\\bin';
-
+const appDir = path.dirname(app.getPath('userData')) + '\\lazyType\\bin';
+fs.mkdir(appDir, function(error){
+	if(error.code !== 'EEXIST'){
+		throw error;
+	}
+});
 const nedb = require('nedb');
 const history = new nedb({
 	filename: app.getPath('appData') + '/lazyType/data/history.db'
@@ -15,6 +19,10 @@ const history = new nedb({
 //	"path":path
 //}
 history.loadDatabase();
+const settings = new nedb({
+	filename: app.getPath('appData') + '/lazyType/data/settings.db'
+});
+settings.loadDatabase();
 
 let mainScreen;
 function createMainWindow(){
@@ -39,6 +47,39 @@ ipcMain.on('finish-load', function(e, item){
 		else {
 			console.log(results);
 			mainScreen.webContents.send('history', results);
+			//Detect first run and perform config steps initially.
+			settings.find({}, function (error, results) {
+				if (error) throw error;
+				else {
+					if (results.length === 0) {
+						dialog.showMessageBox(mainScreen, {
+							type: "info",
+							buttons: ["Ok", "Cancel"],
+							title: "First Run",
+							message: "This seems to be the first time, the software is run on the system. We need to perform some final configuration steps once. Click Ok to begin."
+						}, function (response) {
+							if (response === 0) {
+								configureSystem();
+								settings.insert({ firstRun: false }, function (error, results) {
+									if (error) throw error;
+								});
+							}
+							else {
+								//Turn off the initial configuration switch.
+								settings.insert({ firstRun: false }, function (error, results) {
+									if (error) throw error;
+								});
+							}
+						});
+					}
+					else {
+						//Turn off the initial configuration switch.
+						settings.insert({ firstRun: false }, function (error, results) {
+							if (error) throw error;
+						});
+					}
+				}
+			});
 		}
 	});
 });
@@ -81,13 +122,13 @@ function checkUpdates(e) {
 			}
 			else {
 				if (e === 'f') {
-					mainScreen.webContents.send('status', { name: data.name, status: 4 });					
+					mainScreen.webContents.send('status', { status: 4 });					
 				}
 			}
 		}
 		else {
 			if (e === 'f') {
-				mainScreen.webContents.send('status', { name: data.name, status: 5 });
+				mainScreen.webContents.send('status', { status: 5 });
 			}
 		}
 	});
@@ -101,50 +142,7 @@ ipcMain.on('help', function(e, item){
 ipcMain.on('config', function(e, item){
 	//extract the current path
 	//check if system is already configured
-	if(!process.env.PATH.includes(appDir)){
-		dialog.showMessageBox(mainScreen, {
-			type: "info",
-			buttons: ["Ok", "Cancel"],
-			title: "Configuration",
-			message: "Configuration process takes some time depending on your computer. The system may ask for admin rights."
-		}, function (response) {
-			//0 => Yes
-			//1 => No
-			if (!response) {
-				mainScreen.webContents.send('status', { status: 7 });
-				//ask for admin rights and invoke the output of config.cpp as new.exe
-				sudo.exec('ConfigUtility.exe', {
-					name: 'Lazy Type'
-				}, function (error, stdout, stderr) {
-					if (error) throw error;
-					else {
-						if (stdout == 0) {
-							mainScreen.webContents.send('status', { status: 3 });
-							dialog.showMessageBox(mainScreen, {
-								type: "info",
-								buttons: ["Ok"],
-								title: "Configuration",
-								message: "The system is configured. The software must be restarted to save the new configuration changes. Click Ok to quit the app."
-							}, function(response){
-								app.quit(0);
-							});
-						}
-						else {
-							dialog.showErrorBox('Lazy Type', 'There seems to be an error. ' + stdout);
-						}
-					}
-				});
-			}
-		});
-	}
-	else{
-		dialog.showMessageBox(mainScreen, {
-			type: "info",
-			buttons: ["Ok"],
-			title: "Configuration",
-			message: "The system is already configured. If the commands still do not work, try reinstalling the program."
-		});
-	}
+	configureSystem();
 });
 
 ipcMain.on('backup', function(e, item){
@@ -212,6 +210,53 @@ ipcMain.on('backup', function(e, item){
 		}
 	});
 });
+
+function configureSystem(){
+	if (!process.env.PATH.includes(appDir)) {
+		dialog.showMessageBox(mainScreen, {
+			type: "info",
+			buttons: ["Ok", "Cancel"],
+			title: "Configuration",
+			message: "Configuration process takes some time depending on your computer. The system may ask for admin rights."
+		}, function (response) {
+			//0 => Yes
+			//1 => No
+			if (!response) {
+				mainScreen.webContents.send('status', { status: 7 });
+				//ask for admin rights and invoke the output of config.cpp as new.exe
+				sudo.exec('ConfigUtility.exe '+appDir, {
+					name: 'Lazy Type'
+				}, function (error, stdout, stderr) {
+					if (error) throw error;
+					else {
+						if (stdout == 0) {
+							mainScreen.webContents.send('status', { status: 3 });
+							dialog.showMessageBox(mainScreen, {
+								type: "info",
+								buttons: ["Ok"],
+								title: "Configuration",
+								message: "The system is configured. The software must be restarted to save the new configuration changes. Click Ok to quit the app."
+							}, function (response) {
+								app.quit(0);
+							});
+						}
+						else {
+							dialog.showErrorBox('Lazy Type', 'There seems to be an error. ' + stdout);
+						}
+					}
+				});
+			}
+		});
+	}
+	else {
+		dialog.showMessageBox(mainScreen, {
+			type: "info",
+			buttons: ["Ok"],
+			title: "Configuration",
+			message: "The system is already configured. If the commands still do not work, file an issue over at the 'Get Help' link."
+		});
+	}
+}
 
 function addItem(data){
 	//{

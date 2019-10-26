@@ -5,8 +5,10 @@ const request = require('request');
 const sudo = require('sudo-prompt');
 const appDir = path.dirname(app.getPath('userData')) + '\\lazyType\\bin';
 fs.mkdir(appDir, function(error){
-	if(error.code !== 'EEXIST'){
-		throw error;
+	if(error){
+		if (error.code !== 'EEXIST') {
+			throw error;
+		}
 	}
 });
 const nedb = require('nedb');
@@ -39,7 +41,7 @@ function createMainWindow(){
 	mainScreen.on('closed', function(){
 		loginScreen = null;
 	});
-	//checkUpdates();
+	checkUpdates();
 }
 ipcMain.on('finish-load', function(e, item){
 	history.find({}, function (error, results) {

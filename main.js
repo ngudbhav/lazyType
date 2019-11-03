@@ -4,13 +4,6 @@ const fs = require('fs');
 const request = require('request');
 const sudo = require('sudo-prompt');
 const appDir = path.dirname(app.getPath('userData')) + '\\lazyType\\bin';
-fs.mkdir(appDir, function(error){
-	if(error){
-		if (error.code !== 'EEXIST') {
-			throw error;
-		}
-	}
-});
 const nedb = require('nedb');
 const history = new nedb({
 	filename: app.getPath('appData') + '/lazyType/data/history.db'
@@ -42,6 +35,13 @@ function createMainWindow(){
 		loginScreen = null;
 	});
 	checkUpdates();
+	fs.mkdir(appDir, function(error){
+		if(error){
+			if (error.code !== 'EEXIST') {
+				throw error;
+			}
+		}
+	});
 }
 ipcMain.on('finish-load', function(e, item){
 	history.find({}, function (error, results) {

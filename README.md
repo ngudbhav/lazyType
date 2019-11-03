@@ -1,5 +1,5 @@
 
-[![Release](https://img.shields.io/badge/Release-1.0.0-green.svg)](https://github.com/ngudbhav/lazyType/releases)
+[![Release](https://img.shields.io/badge/Release-1.0.1-green.svg)](https://github.com/ngudbhav/lazyType/releases)
 [![Dependencies](https://img.shields.io/david/ngudbhav/lazyType.svg)](https://github.com/ngudbhav/lazyType/blob/master/package.json)
 [![Downloads](https://img.shields.io/github/downloads/ngudbhav/lazyType/total.svg)](https://github.com/ngudbhav/lazyType/releases)
 [![Last-Release](https://img.shields.io/github/release-date/ngudbhav/lazyType.svg)](https://github.com/ngudbhav/lazType/releases)

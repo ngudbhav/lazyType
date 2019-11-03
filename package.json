@@ -1,6 +1,6 @@
 {
   "name": "lazytype",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Software to create aliases for commands, applications to type in cmd, terminal.",
   "main": "main.js",
   "scripts": {

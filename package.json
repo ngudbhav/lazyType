@@ -28,7 +28,7 @@
     "sudo-prompt": "^9.0.0"
   },
   "devDependencies": {
-    "electron": "^6.0.9",
+    "electron": "^9.1.0",
     "mocha": "^6.2.1",
     "spectron": "^8.0.0"
   }

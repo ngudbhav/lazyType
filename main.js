@@ -1,11 +1,11 @@
 const {app, BrowserWindow, ipcMain, shell, dialog} = require('electron');
 const path = require('path');
 const fs = require('fs');
-const request = require('request');
+const request = require('got');
 const sudo = require('sudo-prompt');
 const appDir = path.dirname(app.getPath('userData')) + '\\lazyType\\bin';
-const nedb = require('nedb');
-const history = new nedb({
+const Nedb = require('nedb');
+const history = new Nedb({
 	filename: app.getPath('appData') + '/lazyType/data/history.db'
 });
 //Save the db in format
@@ -14,32 +14,31 @@ const history = new nedb({
 //	"path":path
 //}
 history.loadDatabase();
-const settings = new nedb({
+const settings = new Nedb({
 	filename: app.getPath('appData') + '/lazyType/data/settings.db'
 });
 settings.loadDatabase();
 
 let mainScreen;
-function createMainWindow(){
-	//Create login screen
+const createMainWindow = () => {
 	mainScreen = new BrowserWindow({
-		width: 1000, height: 600, minHeight: 600, icon: 'icons/win/app.ico',
-		minWidth: 1000,webPreferences: {
-		nodeIntegration: true
-	},frame:false});
-	mainScreen.loadFile(path.join(__dirname, 'views', 'main.html'));
+		width: 1000,
+		height: 600,
+		minHeight: 600,
+		icon: 'icons/win/app.ico',
+		minWidth: 1000,
+		webPreferences: {
+			nodeIntegration: true,
+		},
+		titleBarStyle: 'hidden',
+	});
+	mainScreen.loadFile(path.join(__dirname, 'views', 'main.html')).then(_ => checkUpdates());
 	mainScreen.setMenu(null);
 	mainScreen.removeMenu();
 	//mainScreen.openDevTools();
-	mainScreen.on('closed', function(){
-		loginScreen = null;
-	});
-	checkUpdates();
-	fs.mkdir(appDir, function(error){
-		if(error){
-			if (error.code !== 'EEXIST') {
-				throw error;
-			}
+	fs.mkdir(appDir, error => {
+		if(error && error.code !== 'EEXIST') {
+			throw error;
 		}
 	});
 }
@@ -85,12 +84,7 @@ ipcMain.on('finish-load', function(e, item){
 		}
 	});
 });
-ipcMain.on('addItem', function(e, item){
-	addItem(item);
-});
-ipcMain.on('deleteItem', function(e, item){
-	deleteItem(item, 1);
-});
+
 function checkUpdates(e) {
 	request('https://api.github.com/repos/ngudbhav/lazyType/releases/latest', { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:59.0) Gecko/20100101 ' } }, function (error, html, body) {
 		if (!error) {
@@ -135,17 +129,12 @@ function checkUpdates(e) {
 		}
 	});
 }
-ipcMain.on('update', function (e, item) {
-	checkUpdates('f');
-});
-ipcMain.on('help', function(e, item){
-	shell.openExternal('https://github.com/ngudbhav/lazyType');
-});
-ipcMain.on('config', function(e, item){
-	//extract the current path
-	//check if system is already configured
-	configureSystem();
-});
+
+ipcMain.on('addItem', (_, item) => addItem(item));
+ipcMain.on('deleteItem', (_, item) => deleteItem(item, 1));
+ipcMain.on('update',  _ => checkUpdates('f'));
+ipcMain.on('help', _ => shell.openExternal('https://github.com/ngudbhav/lazyType'));
+ipcMain.on('config', _ => configureSystem());
 
 ipcMain.on('backup', function(e, item){
 	dialog.showMessageBox(mainScreen, {
@@ -355,14 +344,6 @@ function updateItem(data, oname){
 	});
 }
 
-app.on('ready', ()=>{
-	createMainWindow();
-});
-app.on('window-all-closed', function(){
-	if(process.platform!=='darwin'){
-		app.quit();
-	}
-});
-app.on('activate', function(){
-	createMainWindow();
-});
+app.on('ready', () => createMainWindow());
+app.on('window-all-closed', () => app.quit());
+app.on('activate', () => createMainWindow());

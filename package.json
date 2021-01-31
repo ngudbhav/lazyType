@@ -20,16 +20,13 @@
   },
   "homepage": "https://github.com/ngudbhav/lazyType#readme",
   "dependencies": {
-    "custom-electron-titlebar": "^3.1.0",
-    "jquery": "^3.4.1",
-    "materialize-css": "^1.0.0-rc.2",
+    "custom-electron-titlebar": "^3.2.6",
+    "got": "^11.8.1",
+    "materialize-css": "^1.0.0",
     "nedb": "^1.8.0",
-    "request": "^2.88.0",
-    "sudo-prompt": "^9.0.0"
+    "sudo-prompt": "^9.2.1"
   },
   "devDependencies": {
-    "electron": "^6.0.9",
-    "mocha": "^6.2.1",
-    "spectron": "^8.0.0"
+    "electron": "^11.2.1"
   }
 }

@@ -1,68 +1,65 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>Lazy Type</title>
-	<link rel="stylesheet" href="../node_modules/materialize-css/dist/css/materialize.min.css">
-	<link rel="stylesheet" href="../static/css/font.css">
-	<link rel="stylesheet" href="../static/css/style.css">	
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Lazy Type</title>
+  <link rel="stylesheet" href="../node_modules/materialize-css/dist/css/materialize.min.css">
+  <link rel="stylesheet" href="../static/css/font.css">
+  <link rel="stylesheet" href="../static/css/style.css">
 </head>
 <body>
-		<br/>
-		<div class="container">
-		  <br><br>
-		  <div class="fixed-action-btn">
-				<a class="btn-floating btn-large red">
-				  <i class="large material-icons orange">dehaze</i>
-				</a>
-				<ul>
-				  <li><a class="btn-floating yellow darken-1 tooltipped" data-position="left" data-tooltip="Get Help" onclick="help();"><i class="material-icons">lightbulb_outline</i></a></li>
-				  <li><a class="btn-floating  brown darken-1 tooltipped" data-position="left" data-tooltip="System Check" onclick= "config()" ><i class="fa fa-medkit" aria-hidden="true"></i></a></li>				  
-				  <li><a class="btn-floating red tooltipped" data-position="left" data-tooltip="Backup" onclick= "backup()" ><i class="material-icons">settings_backup_restore</i></a></li>
-				  <li><a class="btn-floating blue tooltipped" data-position="left" data-tooltip="Check for Updates" onclick="checkUpdates();"><i class="material-icons">update</i></a></li>
-				  <li><a class="btn-floating green tooltipped" data-position="left" data-tooltip="Add Command" onclick= "addNewCard()" ><i class="material-icons">add</i></a></li>
-				</ul>
-		 </div>
-		  
-		  <h1 class="header center orange-text">Lazy Type</h1>
-		  <div class="row center">
-				<h5 class="header col s12 light extraText hide">Save Time on typing commands using your custom made aliases</h5>
-		  </div>
-		  <div class="row center">
-				<h5 class="header col s12 light extraText hide">Work Effciently , Work Faster.</h5>
-		  </div>
-		  <br/>
-		  <div class="row center">
-				<nav>
-					<div class="nav-wrapper orange" class="col s8">
-						<form onsubmit="return false;">
-							<div class="input-field">
-							  <input id="search" onfocus="hideCards()" onfocusout="showCards()" onkeyup="searchCards(this)" type="search" required>
-							  <label class="label-icon" for="search"><i class="material-icons">search</i></label>
-							  <i class="material-icons">close</i>
-							</div>
-						</form>
-					</div>
-				</nav>
-		  </div>
-		  <br><br>
-		</div>
-		<center>
-			<div class="container-fluid" style="width:80%;">
-				<div class="row center" id="cardBody">
-						<!-- Dynamic cards -->
-				</div>
-			</div>
-		</center>
-		
-	<script type="text/javascript">
-		window.$ = window.jQuery = require('jquery');
-		var electron = require('electron');
-		var {ipcRenderer} = electron;
-	</script>
-	<script src="../node_modules/materialize-css/dist/js/materialize.min.js"></script>	
-	<script src="../static/js/script.js"></script>
+<br/>
+<div class="container">
+  <br><br>
+  <div class="fixed-action-btn">
+    <a class="btn-floating btn-large red">
+      <i class="large material-icons orange">dehaze</i>
+    </a>
+    <ul>
+      <li><a class="btn-floating yellow darken-1 tooltipped" data-position="left" data-tooltip="Get Help" onclick="help();"><i class="material-icons">lightbulb_outline</i></a></li>
+      <li><a class="btn-floating  brown darken-1 tooltipped" data-position="left" data-tooltip="System Check" onclick= "config()" ><i class="fa fa-medkit" aria-hidden="true"></i></a></li>
+      <li><a class="btn-floating red tooltipped" data-position="left" data-tooltip="Backup" onclick= "backup()" ><i class="material-icons">settings_backup_restore</i></a></li>
+      <li><a class="btn-floating blue tooltipped" data-position="left" data-tooltip="Check for Updates" onclick="checkUpdates();"><i class="material-icons">update</i></a></li>
+      <li><a class="btn-floating green tooltipped" data-position="left" data-tooltip="Add Command" onclick= "addNewCard()" ><i class="material-icons">add</i></a></li>
+    </ul>
+  </div>
+
+  <h1 class="header center orange-text">Lazy Type</h1>
+  <div class="row center">
+    <h5 class="header col s12 light extraText hide">Save Time on typing commands using your custom made aliases</h5>
+  </div>
+  <div class="row center">
+    <h5 class="header col s12 light extraText hide">Work Effciently , Work Faster.</h5>
+  </div>
+  <br/>
+  <div class="row center">
+    <nav>
+      <div class="nav-wrapper orange col s8">
+        <form onsubmit="return false;">
+          <div class="input-field">
+            <input id="search" onfocus="hideCards()" onfocusout="showCards()" onkeyup="searchCards(this)" type="search" required>
+            <label class="label-icon" for="search"><i class="material-icons">search</i></label>
+            <i class="material-icons">close</i>
+          </div>
+        </form>
+      </div>
+    </nav>
+  </div>
+  <br><br>
+</div>
+<center>
+  <div class="container-fluid" style="width:80%;">
+    <div class="row center" id="cardBody">
+      <!-- Dynamic cards -->
+    </div>
+  </div>
+</center>
+
+<script type="text/javascript">
+  window.$ = window.jQuery = require('jquery');
+</script>
+<script src="../node_modules/materialize-css/dist/js/materialize.min.js"></script>
+<script src="../static/js/script.js"></script>
 </body>
 </html>
-

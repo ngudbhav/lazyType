@@ -13,20 +13,20 @@
     "type": "git",
     "url": "git+https://github.com/ngudbhav/lazyType.git"
   },
-  "author": "Udbhav Gambhir <ngudbhav05@hotmail.com> (https://www.ngudbhav.me)",
+  "author": "Udbhav Gambhir <ngudbhav05@hotmail.com> (https://www.ngudbhav.com)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/ngudbhav/lazyType/issues"
   },
   "homepage": "https://github.com/ngudbhav/lazyType#readme",
   "dependencies": {
-    "custom-electron-titlebar": "^3.2.6",
-    "got": "^11.8.1",
+    "custom-electron-titlebar": "^3.2.10",
+    "got": "^12.0.1",
     "materialize-css": "^1.0.0",
     "nedb": "^1.8.0",
     "sudo-prompt": "^9.2.1"
   },
   "devDependencies": {
-    "electron": "^11.2.1"
+    "electron": "^16.0.7"
   }
 }

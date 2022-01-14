@@ -61,7 +61,6 @@ typings/
 # next.js build output
 .next
 #custom
-*-lock.json
 .vscode
 new.exe
 ConfigUtility.exe

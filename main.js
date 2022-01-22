@@ -1,6 +1,7 @@
 const {
   app, BrowserWindow, ipcMain, shell, dialog, nativeTheme,
 } = require('electron');
+const Remote = require('@electron/remote/main')
 const path = require('path');
 const fs = require('fs');
 const request = require('node-fetch');
@@ -27,12 +28,12 @@ const createMainWindow = () => {
     backgroundColor: nativeTheme.shouldUseDarkColors ? '#333333' : '#ffffff',
     frame: false,
     webPreferences: {
-      devTools: false,
+      devTools: true,
       nodeIntegration: false,
+			contextIsolation: true,
       nodeIntegrationInWorker: false,
       nodeIntegrationInSubFrames: false,
-      contextIsolation: true,
-      preload: path.join(__dirname, '../web', 'preload.js'),
+      preload: path.join(__dirname, 'static', 'js', 'preload.js'),
       disableBlinkFeatures: "Auxclick",
     },
     width: 1000,
@@ -42,51 +43,51 @@ const createMainWindow = () => {
     minWidth: 1000,
     titleBarStyle: 'hidden',
   });
+	Remote.initialize();
+	Remote.enable(mainScreen.webContents);
   mainScreen.loadFile(path.join(__dirname, 'views', 'main.html')).then(_ => checkUpdates());
   mainScreen.setMenu(null);
   mainScreen.removeMenu();
-  if (process.env.NODE_ENV === 'development') {
-    mainScreen.webContents.openDevTools();
-  }
-}
-ipcMain.on('finish-load', () => {
-  fs.mkdir(appDir, error => {
-    if(error && error.code !== 'EEXIST') {
-      throw new Error(`Failed to create required system directories. Verbose information: ${error}`);
-    }
-  });
+	mainScreen.webContents.openDevTools();
+	mainScreen.on('ready-to-show', () => {
+		fs.mkdir(appDir, error => {
+			if(error && error.code !== 'EEXIST') {
+				throw new Error(`Failed to create required system directories. Verbose information: ${error}`);
+			}
+		});
 
-  history.find({}, (error, results) => {
-    if (error) {
-      throw new Error(`Failed to read required directories. Verbose information: ${error}`);
-    } else {
-      mainScreen.webContents.send('history', results);
-      settings.find({}, (error, results) => {
-        if (error) {
-          throw new Error(`Failed to read required directories. Verbose information: ${error}`);
-        }
-        else {
-          if (results.length === 0) {
-            const response = dialog.showMessageBoxSync(mainScreen, {
-              type: "info",
-              buttons: ["Ok", "Cancel"],
-              title: "First Run",
-              message: "This seems to be the first time, the software is run on the system. We need to perform some final configuration steps once. Click Ok to begin."
-            });
-						if (response === 0) {
-							configureSystem();
+		history.find({}, (error, results) => {
+			if (error) {
+				throw new Error(`Failed to read required directories. Verbose information: ${error}`);
+			} else {
+				mainScreen.webContents.send('history', results);
+				settings.find({}, (error, results) => {
+					if (error) {
+						throw new Error(`Failed to read required directories. Verbose information: ${error}`);
+					}
+					else {
+						if (results.length === 0) {
+							const response = dialog.showMessageBoxSync(mainScreen, {
+								type: "info",
+								buttons: ["Ok", "Cancel"],
+								title: "First Run",
+								message: "This seems to be the first time, the software is run on the system. We need to perform some final configuration steps once. Click Ok to begin."
+							});
+							if (response === 0) {
+								configureSystem();
+							}
 						}
-          }
-          settings.insert({ firstRun: false }, error => {
-            if (error) {
-              throw new Error(`Failed to write required directories. Verbose information: ${error}`);
-            }
-          });
-        }
-      });
-    }
-  });
-});
+						settings.insert({ firstRun: false }, error => {
+							if (error) {
+								throw new Error(`Failed to write required directories. Verbose information: ${error}`);
+							}
+						});
+					}
+				});
+			}
+		});
+	});
+}
 
 const checkUpdates = async e => {
 	try {

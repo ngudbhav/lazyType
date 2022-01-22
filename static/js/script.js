@@ -1,7 +1,6 @@
-const { ipcRenderer } = require('electron').electron;
 let countCards = 0;
 
-ipcRenderer.on('status', function(e, item){
+window.api.receive('status', item => {
     switch(item.status){
         case 1: M.toast({html: 'Created Successfully &nbsp<i class="material-icons">check_circle</i>',classes:'orange white-text left',displayLength:2000});
                 break;
@@ -99,7 +98,7 @@ const cardHtml =
         </div>
     </div>`;
 
-ipcRenderer.on('history', function(e, item){
+window.api.receive('history', item => {
     const card = document.getElementById('cardBody');
     countCards = item.length;
     if(item.length === 0){
@@ -121,20 +120,20 @@ ipcRenderer.on('history', function(e, item){
 });
 
 const help = () => {
-    ipcRenderer.send('help', 'null');
+    window.api.send('help', 'null');
     M.toast({ html: 'Check your Browser &nbsp<i class="material-icons">circle_check</i>', classes: 'orange white-text left', displayLength: 2000 });
 }
 
 const checkUpdates = () => {
-    ipcRenderer.send('update', 'null');
+    window.api.send('update', 'null');
 }
 
 const config = () => {
-    ipcRenderer.send('config');
+    window.api.send('config');
 }
 
 const backup = () => {
-    ipcRenderer.send('backup');
+    window.api.send('backup');
 }
 
 const preSubmit = (f, e) => {
@@ -169,7 +168,7 @@ const submitContents = e => {
             path: orgcmd,
             switch: inf.files.length === 0 ? 1 : 0
         };
-        ipcRenderer.send('addItem', obj);
+        window.api.send('addItem', obj);
         p.siblings('.file-field').addClass('hide');
         if(p.siblings('.shortcmd').length == 0){
             p.siblings('.submit').addClass('hide');
@@ -195,7 +194,7 @@ const deleteContents = e => {
     if(sure){
         let p = $(e).parent();
         //delete from db
-        ipcRenderer.send('deleteItem', { name: p.siblings('.shortcmd').children().val()});
+        window.api.send('deleteItem', { name: p.siblings('.shortcmd').children().val()});
         //ui update
         p.parents('.card').parent().remove();
     }
@@ -249,12 +248,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     const elems2 = document.querySelectorAll('.tooltipped');
     M.Tooltip.init(elems2, {});
-    ipcRenderer.send('finish-load');
-});
-
-const customTitlebar = require('custom-electron-titlebar');
- 
-new customTitlebar.Titlebar({
-    backgroundColor: customTitlebar.Color.fromHex('#ff9800'),
-    titleHorizontalAlignment:'left'
+    window.api.send('finish-load');
 });

@@ -20,7 +20,8 @@
   },
   "homepage": "https://github.com/ngudbhav/lazyType#readme",
   "dependencies": {
-    "custom-electron-titlebar": "^3.2.10",
+    "@electron/remote": "^2.0.1",
+    "custom-electron-titlebar": "3.2.10",
     "materialize-css": "^1.0.0",
     "nedb": "^1.8.0",
     "node-fetch": "2",

@@ -1,10 +1,9 @@
 const {
-  app, BrowserWindow, ipcMain, shell, dialog, nativeTheme,
+  app, BrowserWindow, ipcMain, shell, dialog, nativeTheme, net,
 } = require('electron');
-const Remote = require('@electron/remote/main')
+const { setupTitlebar, attachTitlebarToWindow } = require('custom-electron-titlebar/main');
 const path = require('path');
 const fs = require('fs');
-const request = require('node-fetch');
 const sudo = require('sudo-prompt');
 const appDir = path.dirname(app.getPath('userData')) + '\\lazyType\\bin';
 const Nedb = require('nedb');
@@ -24,15 +23,13 @@ const settings = new Nedb({
 
 let mainScreen;
 const createMainWindow = () => {
+	setupTitlebar();
   mainScreen = new BrowserWindow({
+		frame: process.platform === 'darwin',
     backgroundColor: nativeTheme.shouldUseDarkColors ? '#333333' : '#ffffff',
-    frame: false,
     webPreferences: {
       devTools: true,
-      nodeIntegration: false,
-			contextIsolation: true,
-      nodeIntegrationInWorker: false,
-      nodeIntegrationInSubFrames: false,
+			sandbox: false,
       preload: path.join(__dirname, 'static', 'js', 'preload.js'),
       disableBlinkFeatures: "Auxclick",
     },
@@ -43,12 +40,11 @@ const createMainWindow = () => {
     minWidth: 1000,
     titleBarStyle: 'hidden',
   });
-	Remote.initialize();
-	Remote.enable(mainScreen.webContents);
   mainScreen.loadFile(path.join(__dirname, 'views', 'main.html')).then(_ => checkUpdates());
   mainScreen.setMenu(null);
   mainScreen.removeMenu();
 	mainScreen.webContents.openDevTools();
+	attachTitlebarToWindow(mainScreen);
 	mainScreen.on('ready-to-show', () => {
 		fs.mkdir(appDir, error => {
 			if(error && error.code !== 'EEXIST') {
@@ -89,33 +85,46 @@ const createMainWindow = () => {
 	});
 }
 
-const checkUpdates = async e => {
-	try {
-		const body = await request('https://api.github.com/repos/ngudbhav/lazyType/releases/latest').then(res => res.text());
-		const appVersion = app.getVersion().replace(' ', '');
-		const { tag_name: tagName, htmlBody } = JSON.parse(body);
-		const latestVersion = tagName.replace('v', '');
-		const changeLog = htmlBody.replace('<strong>Changelog</strong>', 'Update available. Here are the changes:\n');
-
-		if (latestVersion !== appVersion) {
-			const response = dialog.showMessageBoxSync({
-				type: 'info',
-				buttons: ['Download'],
-				title: 'Update Available',
-				message: changeLog,
-			});
-			if (response === 0) {
-				shell.openExternal('https://github.com/ngudbhav/lazyType/releases/latest').then();
+const checkUpdates = (source, window) => {
+	const request = net.request({
+		url: 'https://api.github.com/repos/ngudbhav/lazyType/releases/latest',
+	});
+	request.on('response', response => {
+		response.on('data', body => {
+			// Add error handler to send failure to renderer
+			const currentVersion = app.getVersion().replace(' ', '');
+			const latestVersion = JSON.parse(body).tag_name.replace('v', '');
+			const changeLog = JSON.parse(body).body.replace(
+				'Changelog',
+				'Update available. Here are the changes:\n'
+			);
+			if(latestVersion !== currentVersion){
+				const response = dialog.showMessageBoxSync({
+					type: 'info',
+					buttons:['Open Browser to download link', 'Close'],
+					title: 'Update Available',
+					detail: changeLog,
+				});
+				if(response === 0){
+					shell.openExternal('https://github.com/ngudbhav/lazyType/releases/latest').then();
+				}
 			}
-		} else {
-			if (e === 'f') {
-				mainScreen.webContents.send('status', {status: 4});
+			else{
+				if(source === 'user'){
+					dialog.showMessageBoxSync({
+						type: 'info',
+						buttons:['Close'],
+						title: 'No update available!',
+						detail: 'You already have the latest version installed.'
+					});
+				}
 			}
-		}
-	} catch (e) {
-		// Ignore
-	}
-}
+			mainScreen.webContents.send('updateCheckup', null);
+		});
+	});
+	request.setHeader('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:59.0) Gecko/20100101 ');
+	request.end()
+};
 
 ipcMain.on('addItem', (_, item) => addItem(item));
 ipcMain.on('deleteItem', (_, item) => deleteItem(item, 1));
@@ -227,13 +236,14 @@ const configureSystem = () => {
 	}
 }
 
+/** data = {
+ *	name: ""//New command name.
+ *	path: ""//File path in case of file and CMD alias in case of command
+ *	switch: ""//1 for command and 0 for file
+ * }
+ * In case updating is performed
+ */
 const addItem = data => {
-	//{
-	//	name: ""//New command name.
-	//	path: ""//File path in case of file and CMD alias in case of command
-	//	switch: ""//1 for command and 0 for file
-	//}
-	//In case updating is performed
 	history.find({ path: data.path }, (error, results) => {
 		if (error) {
 			throw new Error(`An error occurred while adding the command. Verbose information: ${error}`);

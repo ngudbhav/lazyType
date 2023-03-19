@@ -1,5 +1,5 @@
 const { ipcRenderer, contextBridge, shell } = require('electron');
-const customTitleBar = require('custom-electron-titlebar');
+const { Titlebar, Color } = require('custom-electron-titlebar');
 
 contextBridge.exposeInMainWorld(
   "api", {
@@ -19,11 +19,13 @@ contextBridge.exposeInMainWorld(
 );
 
 window.addEventListener('DOMContentLoaded', () => {
-  new customTitleBar.Titlebar({
-    backgroundColor: customTitleBar.Color.fromHex('#ff9800'),
-    icon: '../icons/png/1024x1024.png',
-    menu: null,
-    titleHorizontalAlignment:'left',
-    shadow:true
-  });
+  if (process.platform !== 'darwin') {
+    new Titlebar({
+      backgroundColor: Color.fromHex('#ff9800'),
+      icon: '../icons/png/1024x1024.png',
+      menu: null,
+      titleHorizontalAlignment:'left',
+      shadow:true
+    });
+  }
 });

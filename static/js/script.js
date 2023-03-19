@@ -1,11 +1,6 @@
-var electron = require('electron');
-var { ipcRenderer } = electron;
-var countCards = 0;
-ipcRenderer.on('status', function(e, item){
-    // item.status = 1 => Created new command
-    // item.status = 2 => Deleted command
-    // item.status = 3 => Updated new command
-    // item.name is the name of the shortcut command
+let countCards = 0;
+
+window.api.receive('status', item => {
     switch(item.status){
         case 1: M.toast({html: 'Created Successfully &nbsp<i class="material-icons">check_circle</i>',classes:'orange white-text left',displayLength:2000});
                 break;
@@ -24,7 +19,7 @@ ipcRenderer.on('status', function(e, item){
     }  
 });
 
-var addCard = `<div class="col s12">
+const addCard = `<div class="col s12">
 <div class="card">
     <div class="card-content">
         <span class="card-title">
@@ -63,7 +58,7 @@ var addCard = `<div class="col s12">
 </div>
 </div> `;
 
-var cardHtml =
+const cardHtml =
         ` <div class="col s12">
         <div class="card">
             <div class="card-content">
@@ -103,13 +98,12 @@ var cardHtml =
         </div>
     </div>`;
 
-ipcRenderer.on('history', function(e, item){
-    console.log(item);
-    var card = document.getElementById('cardBody');
+window.api.receive('history', item => {
+    const card = document.getElementById('cardBody');
     countCards = item.length;
-    if(item.length == 0){
-        var newHtml = addCard;
-        newHtml = newHtml.replace(/%%id%%/gi, 1);
+    if(item.length === 0){
+        let newHtml = addCard;
+        newHtml = newHtml.replace(/%%id%%/gi, '1');
         card.innerHTML += newHtml;
         document.getElementsByClassName('extraText')[0].classList.remove('hide');
         document.getElementsByClassName('extraText')[1].classList.remove('hide');
@@ -117,33 +111,32 @@ ipcRenderer.on('history', function(e, item){
     }
 
     for (let i = 0; i < item.length; i++) {
-        var newHtml = cardHtml;
-        newHtml = newHtml.replace(/%%id%%/gi, i+1);
+        let newHtml = cardHtml;
+        newHtml = newHtml.replace(/%%id%%/gi, (i+1).toString());
         newHtml = newHtml.replace(/%%org_cmd%%/gi, item[i].path);
         newHtml = newHtml.replace(/%%short_cmd%%/gi, item[i].name);
-
         card.innerHTML += newHtml;
     }
 });
 
-function help(){
-    ipcRenderer.send('help', 'null');
+const help = () => {
+    window.api.send('help', 'null');
     M.toast({ html: 'Check your Browser &nbsp<i class="material-icons">circle_check</i>', classes: 'orange white-text left', displayLength: 2000 });
 }
 
-function checkUpdates() {
-    ipcRenderer.send('update', 'null');
+const checkUpdates = () => {
+    window.api.send('update', 'null');
 }
 
-function config(){
-    ipcRenderer.send('config');
+const config = () => {
+    window.api.send('config');
 }
 
-function backup(){
-    ipcRenderer.send('backup');
+const backup = () => {
+    window.api.send('backup');
 }
 
-function preSubmit(f, e){
+const preSubmit = (f, e) => {
     if(e.keyCode === 13){
         submitContents(f);
     }
@@ -152,8 +145,7 @@ function preSubmit(f, e){
     }
 }
 
-function editContents(e){
-    //ui update
+const editContents = e => {
     let p = $(e).parent();
     p.siblings('.file-field').removeClass('hide');
     p.siblings('.submit').removeClass('hide');
@@ -163,7 +155,7 @@ function editContents(e){
     p.siblings('.shortcmd').children()[0].removeAttribute('disabled');
 }
 
-function submitContents(e){
+const submitContents = e => {
     let p = $(e).parent();
     let orgcmd = p.siblings('.orgcmd').children().val();
     let shortcmd = p.siblings('.shortcmd').addBack().children().val();
@@ -176,7 +168,7 @@ function submitContents(e){
             path: orgcmd,
             switch: inf.files.length === 0 ? 1 : 0
         };
-        ipcRenderer.send('addItem', obj);
+        window.api.send('addItem', obj);
         p.siblings('.file-field').addClass('hide');
         if(p.siblings('.shortcmd').length == 0){
             p.siblings('.submit').addClass('hide');
@@ -197,50 +189,50 @@ function submitContents(e){
     }
 }
 
-function deleteContents(e){
+const deleteContents = e => {
     let sure = confirm('Are you sure you want to delete shortcut ?');
     if(sure){
         let p = $(e).parent();
         //delete from db
-        ipcRenderer.send('deleteItem', { name: p.siblings('.shortcmd').children().val()});
+        window.api.send('deleteItem', { name: p.siblings('.shortcmd').children().val()});
         //ui update
         p.parents('.card').parent().remove();
     }
     
 }
 
-function fileNameUpdate(e){
+const fileNameUpdate = e => {
     let p = $(e).parents('.filediv');
     p.siblings('.orgcmd').children().val($(e)[0].files[0].path)  
 }
 
-function addNewCard(){
+const addNewCard = () => {
     if(countCards > 0){
-        var card = document.getElementById('cardBody');
-        var newHtml = addCard;
+        const card = document.getElementById('cardBody');
+        let newHtml = addCard;
         newHtml = newHtml.replace(/%%id%%/gi, countCards);
         card.innerHTML = newHtml + card.innerHTML;
     }
 }
 
-function hideCards(){
-    var cards = document.getElementsByClassName('card');
-    for(var i=0;i< cards.length;i++)cards[i].classList.add('hide');
+const hideCards = () => {
+    const cards = document.getElementsByClassName('card');
+    for(let i=0;i< cards.length;i++) cards[i].classList.add('hide');
 }
-function showCards(){
-    var cards = document.getElementsByClassName('card');
-    var search_text  = document.getElementById("search");
+const showCards = () => {
+    const cards = document.getElementsByClassName('card');
+    const search_text  = document.getElementById("search");
     search_text.value = "";
-    for(var i=0;i< cards.length;i++)cards[i].classList.remove('hide');
+    for(let i=0;i< cards.length;i++) cards[i].classList.remove('hide');
 }
-function searchCards(){
-    var cards = document.getElementsByClassName('card');
-    var short = document.getElementsByClassName('shortcut_cmd');
-    var org = document.getElementsByClassName('original_cmd');
-    var search_text  = document.getElementById("search").value;
+const searchCards = () => {
+    const cards = document.getElementsByClassName('card');
+    const short = document.getElementsByClassName('shortcut_cmd');
+    const org = document.getElementsByClassName('original_cmd');
+    const search_text  = document.getElementById("search").value;
 
-    for(var i=0;i<short.length;i++){
-        if(((short[i].value.includes(search_text)) || (org[i].value.includes(search_text))) && search_text!=""){
+    for(let i=0;i<short.length;i++){
+        if(((short[i].value.includes(search_text)) || (org[i].value.includes(search_text))) && search_text !== ""){
             $(cards[i]).removeClass('hide');
         }
         else if(!cards[i].classList.contains('hide')){
@@ -248,24 +240,13 @@ function searchCards(){
         }
     }
 }
-$(document).ready(function(){
-    ipcRenderer.send('finish-load');
-});
 
 document.addEventListener('DOMContentLoaded', function() {
-    var elems = document.querySelectorAll('.fixed-action-btn');
-    var instances = M.FloatingActionButton.init(elems, {
+    const elems = document.querySelectorAll('.fixed-action-btn');
+    M.FloatingActionButton.init(elems, {
       direction: 'bottom'
     });
-    var elems2 = document.querySelectorAll('.tooltipped');
-    var instances = M.Tooltip.init(elems2, {});
-});
-
-const customTitlebar = require('custom-electron-titlebar');
- 
-new customTitlebar.Titlebar({
-    backgroundColor: customTitlebar.Color.fromHex('#ff9800'),
-    icon:'',
-    menu:'',
-    titleHorizontalAlignment:'left'
+    const elems2 = document.querySelectorAll('.tooltipped');
+    M.Tooltip.init(elems2, {});
+    window.api.send('finish-load');
 });

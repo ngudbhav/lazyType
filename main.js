@@ -1,293 +1,264 @@
-const {app, BrowserWindow, ipcMain, shell, dialog} = require('electron');
+const {
+  app, BrowserWindow, ipcMain, shell, dialog, nativeTheme, net,
+} = require('electron');
+const { setupTitlebar, attachTitlebarToWindow } = require('custom-electron-titlebar/main');
 const path = require('path');
 const fs = require('fs');
-const request = require('request');
 const sudo = require('sudo-prompt');
 const appDir = path.dirname(app.getPath('userData')) + '\\lazyType\\bin';
-const nedb = require('nedb');
-const history = new nedb({
-	filename: app.getPath('appData') + '/lazyType/data/history.db'
+const Nedb = require('nedb');
+const history = new Nedb({
+  filename: app.getPath('appData') + '/lazyType/data/history.db',
+  autoload: true,
 });
 //Save the db in format
 //{
 //	"name":"trico",
 //	"path":path
 //}
-history.loadDatabase();
-const settings = new nedb({
-	filename: app.getPath('appData') + '/lazyType/data/settings.db'
+const settings = new Nedb({
+  filename: app.getPath('appData') + '/lazyType/data/settings.db',
+  autoload: true,
 });
-settings.loadDatabase();
 
 let mainScreen;
-function createMainWindow(){
-	//Create login screen
-	mainScreen = new BrowserWindow({
-		width: 1000, height: 600, minHeight: 600, icon: 'icons/win/app.ico',
-		minWidth: 1000,webPreferences: {
-		nodeIntegration: true
-	},frame:false});
-	mainScreen.loadFile(path.join(__dirname, 'views', 'main.html'));
-	mainScreen.setMenu(null);
-	mainScreen.removeMenu();
-	//mainScreen.openDevTools();
-	mainScreen.on('closed', function(){
-		loginScreen = null;
-	});
-	checkUpdates();
-	fs.mkdir(appDir, function(error){
-		if(error){
-			if (error.code !== 'EEXIST') {
-				throw error;
+const createMainWindow = () => {
+	setupTitlebar();
+  mainScreen = new BrowserWindow({
+		frame: process.platform === 'darwin',
+    backgroundColor: nativeTheme.shouldUseDarkColors ? '#333333' : '#ffffff',
+    webPreferences: {
+      devTools: true,
+			sandbox: false,
+      preload: path.join(__dirname, 'static', 'js', 'preload.js'),
+      disableBlinkFeatures: "Auxclick",
+    },
+    width: 1000,
+    height: 600,
+    minHeight: 600,
+    icon: 'icons/win/app.ico',
+    minWidth: 1000,
+    titleBarStyle: 'hidden',
+  });
+  mainScreen.loadFile(path.join(__dirname, 'views', 'main.html')).then(_ => checkUpdates());
+  mainScreen.setMenu(null);
+  mainScreen.removeMenu();
+	mainScreen.webContents.openDevTools();
+	attachTitlebarToWindow(mainScreen);
+	mainScreen.on('ready-to-show', () => {
+		fs.mkdir(appDir, error => {
+			if(error && error.code !== 'EEXIST') {
+				throw new Error(`Failed to create required system directories. Verbose information: ${error}`);
 			}
-		}
-	});
-}
-ipcMain.on('finish-load', function(e, item){
-	history.find({}, function (error, results) {
-		if (error) throw error;
-		else {
-			console.log(results);
-			mainScreen.webContents.send('history', results);
-			//Detect first run and perform config steps initially.
-			settings.find({}, function (error, results) {
-				if (error) throw error;
-				else {
-					if (results.length === 0) {
-						dialog.showMessageBox(mainScreen, {
-							type: "info",
-							buttons: ["Ok", "Cancel"],
-							title: "First Run",
-							message: "This seems to be the first time, the software is run on the system. We need to perform some final configuration steps once. Click Ok to begin."
-						}, function (response) {
+		});
+
+		history.find({}, (error, results) => {
+			if (error) {
+				throw new Error(`Failed to read required directories. Verbose information: ${error}`);
+			} else {
+				mainScreen.webContents.send('history', results);
+				settings.find({}, (error, results) => {
+					if (error) {
+						throw new Error(`Failed to read required directories. Verbose information: ${error}`);
+					}
+					else {
+						if (results.length === 0) {
+							const response = dialog.showMessageBoxSync(mainScreen, {
+								type: "info",
+								buttons: ["Ok", "Cancel"],
+								title: "First Run",
+								message: "This seems to be the first time, the software is run on the system. We need to perform some final configuration steps once. Click Ok to begin."
+							});
 							if (response === 0) {
 								configureSystem();
-								settings.insert({ firstRun: false }, function (error, results) {
-									if (error) throw error;
-								});
 							}
-							else {
-								//Turn off the initial configuration switch.
-								settings.insert({ firstRun: false }, function (error, results) {
-									if (error) throw error;
-								});
+						}
+						settings.insert({ firstRun: false }, error => {
+							if (error) {
+								throw new Error(`Failed to write required directories. Verbose information: ${error}`);
 							}
 						});
 					}
-					else {
-						//Turn off the initial configuration switch.
-						settings.insert({ firstRun: false }, function (error, results) {
-							if (error) throw error;
-						});
-					}
-				}
-			});
-		}
+				});
+			}
+		});
 	});
-});
-ipcMain.on('addItem', function(e, item){
-	addItem(item);
-});
-ipcMain.on('deleteItem', function(e, item){
-	deleteItem(item, 1);
-});
-function checkUpdates(e) {
-	request('https://api.github.com/repos/ngudbhav/lazyType/releases/latest', { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:59.0) Gecko/20100101 ' } }, function (error, html, body) {
-		if (!error) {
-			var v = app.getVersion().replace(' ', '');
-			var latestV = JSON.parse(body).tag_name.replace('v', '');
-			var changeLog = JSON.parse(body).body.replace('<strong>Changelog</strong>', 'Update available. Here are the changes:\n');
-			if (latestV != v) {
-				dialog.showMessageBox(
-					{
+}
+
+const checkUpdates = (source, window) => {
+	const request = net.request({
+		url: 'https://api.github.com/repos/ngudbhav/lazyType/releases/latest',
+	});
+	request.on('response', response => {
+		response.on('data', body => {
+			// Add error handler to send failure to renderer
+			const currentVersion = app.getVersion().replace(' ', '');
+			const latestVersion = JSON.parse(body).tag_name.replace('v', '');
+			const changeLog = JSON.parse(body).body.replace(
+				'Changelog',
+				'Update available. Here are the changes:\n'
+			);
+			if(latestVersion !== currentVersion){
+				const response = dialog.showMessageBoxSync({
+					type: 'info',
+					buttons:['Open Browser to download link', 'Close'],
+					title: 'Update Available',
+					detail: changeLog,
+				});
+				if(response === 0){
+					shell.openExternal('https://github.com/ngudbhav/lazyType/releases/latest').then();
+				}
+			}
+			else{
+				if(source === 'user'){
+					dialog.showMessageBoxSync({
 						type: 'info',
-						buttons: ['Open Browser to download link', 'Close'],
-						title: 'Update Available',
-						detail: changeLog,
-					}, function (response) {
-						if (response === 0) {
-							shell.openExternal('https://github.com/ngudbhav/lazyType/releases/latest');
-						}
-					}
-				);
-				notifier.notify({
-						appName: "NGUdbhav.lazy",
-						title: 'Update Available',
-						message: 'A new version is available. Click to open browser and download.',
-						icon: path.join(__dirname, 'images', 'logo.ico'),
-						sound: true,
-						wait: true
-				});
-				notifier.on('click', function (notifierObject, options) {
-					shell.openExternal('https://github.com/ngudbhav/lazyType/releases/latest');
-				});
-			}
-			else {
-				if (e === 'f') {
-					mainScreen.webContents.send('status', { status: 4 });					
+						buttons:['Close'],
+						title: 'No update available!',
+						detail: 'You already have the latest version installed.'
+					});
 				}
 			}
-		}
-		else {
-			if (e === 'f') {
-				mainScreen.webContents.send('status', { status: 5 });
-			}
-		}
+			mainScreen.webContents.send('updateCheckup', null);
+		});
 	});
-}
-ipcMain.on('update', function (e, item) {
-	checkUpdates('f');
-});
-ipcMain.on('help', function(e, item){
-	shell.openExternal('https://github.com/ngudbhav/lazyType');
-});
-ipcMain.on('config', function(e, item){
-	//extract the current path
-	//check if system is already configured
-	configureSystem();
-});
+	request.setHeader('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:59.0) Gecko/20100101 ');
+	request.end()
+};
 
-ipcMain.on('backup', function(e, item){
-	dialog.showMessageBox(mainScreen, {
-		type: "info",
-		buttons: ["Backup", "Restore", "Cancel"],
-		title: "Backup/Restore",
-		message: "Choose the directory where you want to keep your backup file. While restoring, Browse to the file."
-	}, function(response){
-		if(response === 0){
-			//Backup
-			dialog.showSaveDialog(mainScreen, {
-				title: 'Save the backup file',
-				defaultPath: 'history.db'
-			}, function (filePath) {
-				if (filePath) {
-					fs.copyFile(app.getPath('appData') + '/lazyType/data/history.db', filePath, function (error) {
-						if (error) throw error;
-						else {
-							dialog.showMessageBox(mainScreen, {
-								type: 'info',
-								buttons: ["Ok"],
-								title: 'Backup',
-								message: "The backup file has been successfully saved."
-							});
-						}
+ipcMain.on('addItem', (_, item) => addItem(item));
+ipcMain.on('deleteItem', (_, item) => deleteItem(item, 1));
+ipcMain.on('update',  _ => checkUpdates('f'));
+ipcMain.on('help', _ => shell.openExternal('https://github.com/ngudbhav/lazyType'));
+ipcMain.on('config', _ => configureSystem());
+
+ipcMain.on('backup', _ => {
+	const response = dialog.showMessageBoxSync(mainScreen, {
+		type: 'info',
+		buttons: ['Backup', 'Restore'],
+		title: 'Backup/Restore',
+		message: 'LazyType Backup and Restore utility. The backup can be used to restore the configuration on a new PC.',
+	});
+	if(response === 0){
+		const filePath = dialog.showSaveDialogSync(mainScreen, {
+			title: 'Save the backup file',
+			defaultPath: 'history.db'
+		});
+		if (filePath) {
+			fs.copyFile(app.getPath('appData') + '/lazyType/data/history.db', filePath, error => {
+				if (error) {
+					throw new Error(`Failed to save the Backup. Verbose information: ${error}`);
+				} else {
+					dialog.showMessageBoxSync(mainScreen, {
+						type: 'info',
+						buttons: ['Ok'],
+						title: 'Backup',
+						message: 'The backup file has been successfully saved.',
 					});
 				}
 			});
 		}
-		else if(response === 1){
-			//restore
-			dialog.showOpenDialog(mainScreen, {
-				properties: ['openFile'],
-				filters: [
-					{
-						name: 'LazyType Backup', extensions: ['db']
-					}
-				]
-			}, function (filePath) {
-				if (filePath[0]) {
-					let tempFile = new nedb({
-						filename: filePath[0]
-					});
-					tempFile.loadDatabase();
-					tempFile.find({}, function (error, results) {
-						if (error) throw error;
-						else {
-							for (let i = 0; i < results.length; i++) {
-								addItem(results[i]);
-							}
-						}
-						dialog.showMessageBox(mainScreen, {
-							type: "info",
-							title: "restore",
-							buttons: ["Ok"],
-							message: "The backup has been successfully restored. The software will now restart."
-						}, function(response){
-							app.relaunch();
-							app.quit(0);
-						});
-					});
+	} else if(response === 1){
+		const filePath = dialog.showOpenDialogSync(mainScreen, {
+			properties: ['openFile'],
+			filters: [
+				{
+					name: 'LazyType Backup', extensions: ['db']
 				}
+			]
+		});
+		if (filePath[0]) {
+			let tempFile = new Nedb({
+				filename: filePath[0],
+				autoload: true,
+			});
+
+			tempFile.find({}, function (error, results) {
+				if (error) {
+					throw new Error(`Invalid Backup file. Verbose information: ${error}`);
+				} else {
+					for (let i = 0; i < results.length; i++) {
+						addItem(results[i]);
+					}
+				}
+				dialog.showMessageBoxSync(mainScreen, {
+					type: 'info',
+					title: 'restore',
+					buttons: ['Ok'],
+					message: 'The backup has been successfully restored. The software will now restart.',
+				});
+				app.relaunch();
+				app.quit();
 			});
 		}
-	});
+	}
 });
 
-function configureSystem(){
+const configureSystem = () => {
 	if (!process.env.PATH.includes(appDir)) {
-		dialog.showMessageBox(mainScreen, {
-			type: "info",
-			buttons: ["Ok", "Cancel"],
-			title: "Configuration",
-			message: "Configuration process takes some time depending on your computer. The system may ask for admin rights."
-		}, function (response) {
-			//0 => Yes
-			//1 => No
-			if (!response) {
-				mainScreen.webContents.send('status', { status: 7 });
-				//ask for admin rights and invoke the output of config.cpp as new.exe
-				sudo.exec('ConfigUtility.exe '+appDir, {
-					name: 'Lazy Type'
-				}, function (error, stdout, stderr) {
-					if (error) throw error;
-					else {
-						if (stdout == 0) {
-							mainScreen.webContents.send('status', { status: 3 });
-							dialog.showMessageBox(mainScreen, {
-								type: "info",
-								buttons: ["Ok"],
-								title: "Configuration",
-								message: "The system is configured. The software must be restarted to save the new configuration changes. Click Ok to quit the app."
-							}, function (response) {
-								app.quit(0);
-							});
-						}
-						else {
-							dialog.showErrorBox('Lazy Type', 'There seems to be an error. ' + stdout);
-						}
-					}
-				});
-			}
+		const response = dialog.showMessageBoxSync(mainScreen, {
+			type: 'info',
+			buttons: ['Ok', 'Cancel'],
+			title: 'Configuration',
+			message: 'Configuration process takes some time depending on your computer. The system may ask for admin rights.'
 		});
-	}
-	else {
-		dialog.showMessageBox(mainScreen, {
-			type: "info",
-			buttons: ["Ok"],
-			title: "Configuration",
-			message: "The system is already configured. If the commands still do not work, file an issue over at the 'Get Help' link."
+		if (!response) {
+			mainScreen.webContents.send('status', { status: 7 });
+			//ask for admin rights and invoke the output of config.cpp as new.exe
+			sudo.exec('ConfigUtility.exe ' + appDir, {
+				name: 'Lazy Type',
+			}, (error, stdout) => {
+				if (error) {
+					throw new Error(`Failed to execute Configuration Utility. Re-installing may fix this problem. Verbose information: ${error}`);
+				} else {
+					if (stdout === '0') {
+						mainScreen.webContents.send('status', { status: 3 });
+						dialog.showMessageBoxSync(mainScreen, {
+							type: 'info',
+							buttons: ['Ok'],
+							title: 'Configuration',
+							message: 'The system is configured. The software must be restarted to save the new configuration changes. Click Ok to quit the app.',
+						});
+						app.quit();
+					} else {
+						dialog.showErrorBox('Lazy Type', 'There seems to be an error. ' + stdout);
+					}
+				}
+			});
+		}
+	} else {
+		dialog.showMessageBoxSync(mainScreen, {
+			type: 'info',
+			buttons: ['Ok'],
+			title: 'Configuration',
+			message: 'The system is already configured. If the commands still do not work, file an issue over at the \'Get Help\' link.'
 		});
 	}
 }
 
-function addItem(data){
-	//{
-	//	name: ""//New command name.
-	//	path: ""//File path in case of file and CMD alias in case of command
-	//	switch: ""//1 for command and 0 for file
-	//}
-	//In case updation is performed
-	history.find({path: data.path}, function (error, results) {
-		//The case when only the alias is updated
-		if (error) throw error;
-		else {
-			if(results.length===1){
-				updateItem(data, results[0].name);//Only rename the file
-			}
-			else{
-				history.find({name: data.name}, function(error, results){
-					//The case when the path is updated
-					if(error) throw error;
-					else{
+/** data = {
+ *	name: ""//New command name.
+ *	path: ""//File path in case of file and CMD alias in case of command
+ *	switch: ""//1 for command and 0 for file
+ * }
+ * In case updating is performed
+ */
+const addItem = data => {
+	history.find({ path: data.path }, (error, results) => {
+		if (error) {
+			throw new Error(`An error occurred while adding the command. Verbose information: ${error}`);
+		} else {
+			if(results.length === 1){
+				updateItem(data, results[0].name);
+			} else{
+				history.find({ name: data.name }, (error, results) => {
+					if(error) {
+						throw new Error(`An error occurred while adding the command. Verbose information: ${error}`);
+					} else{
 						if(results.length === 1){
-							//Delete the previous file with the same name
 							deleteItem(data, 0);
-							//Create a new file with the new path
 							createItem(data);
-						}
-						else{
-							//New command Input Case
-							//Create a new File
+						} else{
 							createItem(data);
 						}
 					}
@@ -296,57 +267,60 @@ function addItem(data){
 		}
 	});
 }
-function createItem(data){
-	//Create file and add entry into the database
-	//Both cases differ by switch 1/0.
+
+const createItem = data => {
 	if(data.switch === 0){
-		fs.writeFile(appDir+'\\'+data.name+'.cmd', '@echo off\nstart "" /B \"'+data.path+' %*\"', function (error) {
-			if (error) throw error;
-			else{
-				//History entry
-				history.insert({ "name": data.name, "path": data.path, "switch": data.switch}, function(error){
-					if(error) throw error;
-					else{
+		fs.writeFile(appDir+'\\'+data.name+'.cmd', '@echo off\nstart "" /B \"'+data.path+' %*\"', error => {
+			if (error) {
+				throw new Error(`An error occurred while adding the command. Verbose information: ${error}`);
+			} else {
+				history.insert({ "name": data.name, "path": data.path, "switch": data.switch }, error => {
+					if(error) {
+						throw new Error(`An error occurred while adding the command. Verbose information: ${error}`);
+					} else {
 						mainScreen.webContents.send('status', { name: data.name, status: 1 });
 					}
 				});
 			}
 		});
-	}
-	else{
-		fs.writeFile(appDir + '\\' +data.name+'.cmd', "@echo off\n"+data.path+" %*", function (error) {
-			if (error) throw error;
-			else{
-				//History entry
-				history.insert({ "name": data.name, "path": data.path, "switch": data.switch}, function (error) {
-					if (error) throw error;
-					else{
+	} else {
+		fs.writeFile(appDir + '\\' +data.name+'.cmd', '@echo off\n' + data.path+' %*', error => {
+			if (error) {
+				throw new Error(`An error occurred while adding the command. Verbose information: ${error}`);
+			} else {
+				history.insert({ "name": data.name, "path": data.path, "switch": data.switch }, error => {
+					if (error) {
+						throw new Error(`An error occurred while adding the command. Verbose information: ${error}`);
+					} else {
 						mainScreen.webContents.send('status', {name:data.name, status:1});
 					}
 				});
 			}
 		});
 	}
-	//Run an existing command
 }
-function deleteItem(data, flag){
+
+const deleteItem = data => {
 	//Delete the command
-	fs.unlink(appDir + '\\' +data.name+".cmd", function(error){
-		if(error) throw error;
-		else{
-			history.remove({name: data.name}, {multi: true});
+	fs.unlink(appDir + '\\' + data.name + '.cmd', error => {
+		if(error) {
+			throw new Error(`Failed to delete command. Verbose information: ${error}`);
+		} else{
+			history.remove({ name: data.name }, { multi: true });
 			mainScreen.webContents.send('status', { name: data.name, status: 2 });
 		}
 	});
 }
-function updateItem(data, oname){
-	//Just renaming the command will invoke the file
-	//Previous Name -> New Name
-	fs.rename(appDir + '\\' + oname + '.cmd', appDir + '\\' +data.name+'.cmd', function (error) {
-		if (error) throw error;
-		else{
-			history.update({"name":oname}, {$set:{"name":data.name}}, {multi: true}, function(error){
-				if(error) throw error;
+
+const updateItem = (data, oldName) => {
+	fs.rename(appDir + '\\' + oldName + '.cmd', appDir + '\\' +data.name+'.cmd', error => {
+		if (error) {
+			throw new Error(`Failed to update the command. Verbose information: ${error}`);
+		} else {
+			history.update({ "name":oldName }, { $set:{ "name":data.name } }, { multi: true }, error => {
+				if(error) {
+					throw new Error(`Failed to update the command. Please delete and try again. Verbose information: ${error}`);
+				}
 				else{
 					mainScreen.webContents.send('status', { name: data.name, status: 3 });
 				}
@@ -355,14 +329,11 @@ function updateItem(data, oname){
 	});
 }
 
-app.on('ready', ()=>{
+app.whenReady().then(() => {
 	createMainWindow();
+	app.setAppUserModelId('NGUdbhav.LazyType');
+	app.on('activate', () => {
+		if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
+	});
 });
-app.on('window-all-closed', function(){
-	if(process.platform!=='darwin'){
-		app.quit();
-	}
-});
-app.on('activate', function(){
-	createMainWindow();
-});
+app.on('window-all-closed', () => app.quit());
